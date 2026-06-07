@@ -1,0 +1,27 @@
+{
+  "name": "flipbets",
+  "version": "1.0.0",
+  "description": "Flipbets - Discord Gambling Casino Bot + Web",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "bot": "node bot.js",
+    "web": "node web/server.js",
+    "dev": "node start.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.0",
+    "axios": "^1.6.2",
+    "connect-mongo": "^6.0.0",
+    "cors": "^2.8.5",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.19.0",
+    "mongoose": "^8.0.3",
+    "qrcode": "^1.5.3"
+  }
+}

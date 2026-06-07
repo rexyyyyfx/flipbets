@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="face" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffe88a"/>
+      <stop offset="45%" stop-color="#f5b617"/>
+      <stop offset="80%" stop-color="#c4830b"/>
+      <stop offset="100%" stop-color="#7a4d04"/>
+    </radialGradient>
+    <radialGradient id="rim" cx="50%" cy="50%" r="50%">
+      <stop offset="92%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#5a3603"/>
+    </radialGradient>
+    <linearGradient id="gloss" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff8d0" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#fff8d0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="96" fill="#3a2402"/>
+  <circle cx="100" cy="100" r="94" fill="url(#face)"/>
+  <circle cx="100" cy="100" r="94" fill="url(#rim)"/>
+  <circle cx="100" cy="100" r="78" fill="none" stroke="#a06d08" stroke-width="2" stroke-opacity="0.55"/>
+  <circle cx="100" cy="100" r="72" fill="none" stroke="#fff0b8" stroke-width="1" stroke-opacity="0.35"/>
+  <g transform="translate(100 100)">
+    <path d="M -28 -34 L 28 -34 L 22 -22 L 14 -22 L 14 28 L 8 34 L -8 34 L -14 28 L -14 -22 L -22 -22 Z" fill="#fff8d0" stroke="#7a4d04" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M -28 -34 L 28 -34 L 22 -22 L 14 -22 L 14 28 L 8 34 L -8 34 L -14 28 L -14 -22 L -22 -22 Z" fill="none" stroke="#7a4d04" stroke-width="0.8" transform="translate(1.5 1.5)" opacity="0.6"/>
+  </g>
+  <ellipse cx="74" cy="58" rx="34" ry="18" fill="url(#gloss)"/>
+  <text x="100" y="178" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="700" fill="#7a4d04" letter-spacing="2">HEADS</text>
+</svg>

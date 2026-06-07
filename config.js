@@ -1,0 +1,83 @@
+require('dotenv').config();
+
+module.exports = {
+  token: process.env.DISCORD_TOKEN,
+  mongoURI: process.env.MONGODB_URI,
+  prefix: '.',
+  ownerId: process.env.OWNER_ID,
+  ownerIds: [process.env.OWNER_ID, '1456255350205579378', '1388859512517165087'].filter(Boolean),
+  publicBetsChannel: process.env.PUBLIC_BETS_CHANNEL,
+  gamblingChannel: process.env.GAMBLING_CHANNEL,
+  gamblingChannels: [
+    process.env.GAMBLING_CHANNEL,
+    '1512665864208388126'
+  ].filter(Boolean),
+  websiteUrl: 'https://flipbet.site/',
+  apirone: {
+    accountId: process.env.APIRONE_ACCOUNT_ID,
+    transferKey: process.env.APIRONE_TRANSFER_KEY,
+    apiUrl: 'https://apirone.com/api/v2'
+  },
+  conversionRate: 0.01,
+  port: process.env.PORT || 3000,
+  discord: {
+    clientId: process.env.DISCORD_CLIENT_ID,
+    clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    redirectUri: process.env.DISCORD_REDIRECT_URI
+  },
+  sessionSecret: process.env.SESSION_SECRET,
+  colors: {
+    primary: 0x2b2d31,
+    success: 0x43b581,
+    error: 0xf04747,
+    warning: 0xfaa61a,
+    info: 0x5865f2,
+    gold: 0xffd700
+  },
+  emojis: {
+    coin: '<:Heads:1511971404159914085>',
+    diamond: '<:Diamond:1511971384220192789>',
+    fire: '<a:dice6:1511971454730899599>',
+    rocket: '<a:movingdice:1511971490386546824>',
+    heart: '<:Red:1511971424401883246>',
+    club: '<:Green:1511971399223214120>',
+    spade: '<:Black:1511971374208389240>',
+    star: '<:Celestial:1511971375999615006>',
+    check: '<a:tick:1511971530266116267>',
+    cross: '<:cross:1511971449504534618>',
+    arrowRight: '<:ok:1511971495188893697>',
+    arrowLeft: '<:ok:1511971495188893697>',
+    bitcoin: '<:bitcoin:1511971439752904744>',
+    litecoin: '<:litecoin:1511971474511233095>',
+    heads: '<:Heads:1511971404159914085>',
+    tails: '<:tails:1511971524720984106>',
+    money: '<:Money:1511971414234763354>',
+    wallet: '<:wallet:1511971550507569242>',
+    gift: '<:gift:1511971464964739092>',
+    gold: '<:gold:1511971469687787560>',
+    silver: '<:silver:1511971509923610694>',
+    bronze: '<:bronze:1511971444714639491>',
+    platinum: '<:Platinum:1511971419301482526>',
+    emerald: '<:Emerald:1511971389148631082>',
+    ruby: '<:Ruby:1511971429359288320>',
+    etherium: '<:etherium:1511971459797614632>',
+    usdt: '<:usdt:1511971540206354472>',
+    loading: '<a:loading:1511971479900651571>',
+    tick: '<:tickgreen:1511971535123120260>',
+    warning: '<:warning:1511971555167567874>',
+    alert: '<:alert:1511971434421944371>',
+    question: '<:questionmark:1511971504768942182>',
+    smile: '<:smile:1511971515497840710>',
+    verified: '<:verified:1511971545067552869>',
+    staff: '<:staff:1511971519952322690>',
+    mod: '<:mod:1511971485021896804>',
+    owner: '<:owner:1511971499974721536>',
+    highroller: '<:Highroller:1511971409264644136>',
+    eternal: '<:Eternal:1511971394148237353>',
+    gem: '<:gem:1512396708124954664>',
+    cards: '<:cards:1512396674083979314>',
+    bombBlasted: '<:bomb_blasted:1512396641980780674>',
+    bomb: '<:bomb:1512396615925764126>',
+    bet: '<:bet:1512396587987501156>'
+  }
+};

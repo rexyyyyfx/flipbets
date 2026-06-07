@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: flipbets
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: node start.js
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: MONGODB_URI
+        sync: false
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: OWNER_ID
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_REDIRECT_URI
+        sync: false
+      - key: APIRONE_ACCOUNT_ID
+        sync: false
+      - key: APIRONE_TRANSFER_KEY
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PUBLIC_BETS_CHANNEL
+        sync: false
+      - key: GAMBLING_CHANNEL
+        sync: false

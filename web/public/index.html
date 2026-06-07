@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flipbets - Crypto Casino</title>
+    <link rel="stylesheet" href="css/style.css?v=21" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-gem" viewBox="0 0 24 24"><path d="M6 3h12l3 6-9 12L3 9z" fill="#5be584"/><path d="M6 3h12l3 6-9 12L3 9z" fill="none" stroke="#0f1923" stroke-width=".6"/><path d="M9 3l3 6 3-6M6 3l3 6 6 0 3-6M3 9l6 0 3 12M21 9l-6 0-3 12" fill="none" stroke="#0f1923" stroke-width=".6" opacity=".5"/></symbol>
+<symbol id="i-bomb" viewBox="0 0 24 24"><circle cx="11" cy="14" r="8" fill="currentColor"/><path d="M17.5 7.5l4-4M19 3.5l3 3M20 3.5l-3 3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="8" cy="11" r="1.8" fill="var(--bg, #0f1923)" opacity=".4"/><path d="M11 6V4M11 4l-1.5-1M11 4l1.5-1" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".8"/></symbol>
+<symbol id="i-logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#3b82f6"/><text x="12" y="17" text-anchor="middle" font-family="Inter" font-weight="900" font-size="14" fill="#0f1923">F</text></symbol>
+<symbol id="i-mines" viewBox="0 0 24 24"><path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z" fill="currentColor"/></symbol>
+<symbol id="i-dice" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="#0f1923"/><circle cx="16" cy="8" r="1.5" fill="#0f1923"/><circle cx="8" cy="16" r="1.5" fill="#0f1923"/><circle cx="16" cy="16" r="1.5" fill="#0f1923"/><circle cx="12" cy="12" r="1.5" fill="#0f1923"/></symbol>
+<symbol id="i-limbo" viewBox="0 0 24 24"><path d="M3 19 L9 13 L13 17 L21 5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-blackjack" viewBox="0 0 24 24"><rect x="3" y="6" width="11" height="14" rx="1.5" fill="currentColor" transform="rotate(-12 8 13)"/><rect x="9" y="4" width="11" height="14" rx="1.5" fill="currentColor" transform="rotate(8 14 11)"/></symbol>
+<symbol id="i-wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.5"/></symbol>
+<symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="currentColor"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="800" fill="#0f1923">L</text></symbol>
+<symbol id="i-hilo" viewBox="0 0 24 24"><path d="M12 4l-7 8h4v8h6v-8h4z" fill="currentColor"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v3a5 5 0 01-5 5 5 5 0 01-5-5V4zM5 6H3a3 3 0 003 3M19 6h2a3 3 0 01-3 3M9 14h6v3H9zM7 20h10v2H7z" fill="currentColor"/></symbol>
+<symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 2c2 4-2 5 0 9 1 2 4 2 4 6a4 4 0 11-8 0c0-2 1-3 2-4-1 1-2 1-2 4 0 4 3 5 4 5s4-1 4-5c0-5-4-7-4-15z" fill="currentColor"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 11-13h-7l1-7z" fill="currentColor"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21a8 8 0 0116 0z" fill="currentColor"/></symbol>
+<symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a3 3 0 013-3h12a3 3 0 013 3v2h-3a4 4 0 100 8h3v2a3 3 0 01-3 3H6a3 3 0 01-3-3z" fill="currentColor"/><circle cx="18" cy="13" r="1.5" fill="#0f1923"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z" fill="currentColor"/><path d="M9 12l2 2 4-4" stroke="#0f1923" stroke-width="2" fill="none"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><path d="M12 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 012-2h10" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-spinner" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/><path d="M21 12a9 9 0 00-9-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-deposit" viewBox="0 0 24 24"><path d="M12 3v12M5 10l7 7 7-7" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 20h16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+<symbol id="i-withdraw" viewBox="0 0 24 24"><path d="M12 21V9M5 14l7-7 7 7" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 4h16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+<symbol id="i-tip" viewBox="0 0 24 24"><path d="M2 10h20l-2 10H4z" fill="currentColor"/><path d="M12 10V4M9 4h6l-3 4z" fill="currentColor"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 8a4 4 0 100 8 4 4 0 000-8z" fill="currentColor"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.27.6.87 1 1.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" fill="currentColor"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-skip" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM19 4v16" fill="currentColor"/></symbol>
+<symbol id="i-rocket" viewBox="0 0 24 24"><path d="M12 2c5 0 9 4 9 9l-3 1-1 3-5 5-5-5-1-3-3-1c0-5 4-9 9-9z" fill="currentColor"/></symbol>
+<symbol id="i-bet" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="900" fill="#0f1923">$</text></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 16v-5a6 6 0 10-12 0v5l-2 2v1h16v-1l-2-2zM10 21a2 2 0 004 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21l-1.5-1.5C5 14.4 2 11.7 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2 1.1-1.2 2.8-2 4.5-2 3.1 0 5.5 2.4 5.5 5.5 0 3.2-3 5.9-8.5 11L12 21z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></symbol>
+<symbol id="i-soccer" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7l3 4-3 6-3-6 3-4zM3 12h18M12 2v20" stroke="currentColor" stroke-width="1.5" fill="none"/></symbol>
+<symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 2c-4 6-7 9-7 13a7 7 0 1014 0c0-4-3-7-7-13z" fill="currentColor"/></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 3v18M5 4h14l-2 4 2 4H5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 13a9 9 0 0118 0v5a2 2 0 01-2 2h-2v-7h4M3 13v5a2 2 0 002 2h2v-7H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="i-stats" viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-4 4 4 6-8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-display" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-chev-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a2 2 0 01-2 2h-4v-7h-6v7H5a2 2 0 01-2-2z" fill="currentColor"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><path d="M20 12v8H4v-8M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="14" r="1" fill="currentColor"/><circle cx="12" cy="14" r="1" fill="currentColor"/><circle cx="16" cy="14" r="1" fill="currentColor"/></symbol>
+<symbol id="i-week" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 5v16M16 5v16" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="i-medal" viewBox="0 0 24 24"><circle cx="12" cy="15" r="6" fill="currentColor"/><circle cx="12" cy="15" r="3" fill="#0f1923"/><path d="M9 3l3 7 3-7M8 3h8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+<symbol id="i-percent" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3" fill="currentColor"/><circle cx="18" cy="18" r="3" fill="currentColor"/><path d="M5 19L19 5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+</defs>
+</svg>
+
+<aside class="sidebar">
+  <a class="sidebar-logo" data-page="home">
+    <img class="logo-full" src="assets/logo.svg" alt="Flipbets" />
+  </a>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <a class="nav-item" data-page="home"><svg class="ni"><use href="#i-home"/></svg><span>Home</span></a>
+      <a class="nav-item" data-page="casino"><svg class="ni"><use href="#i-dice"/></svg><span>Casino</span></a>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">Games</div>
+      <a class="nav-item" data-page="mines"><svg class="ni"><use href="#i-bomb"/></svg><span>Mines</span></a>
+      <a class="nav-item" data-page="limbo"><svg class="ni"><use href="#i-limbo"/></svg><span>Limbo</span></a>
+      <a class="nav-item" data-page="blackjack"><svg class="ni"><use href="#i-blackjack"/></svg><span>Blackjack</span></a>
+      <a class="nav-item" data-page="coinflip"><svg class="ni"><use href="#i-coin"/></svg><span>Coinflip</span></a>
+      <a class="nav-item" data-page="hilo"><svg class="ni"><use href="#i-hilo"/></svg><span>HiLo</span></a>
+      <a class="nav-item" data-page="wheel"><svg class="ni"><use href="#i-wheel"/></svg><span>Wheel</span></a>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">More</div>
+      <a class="nav-item" data-page="leaderboard"><svg class="ni"><use href="#i-trophy"/></svg><span>Leaderboard</span></a>
+      <a class="nav-item" data-page="history"><svg class="ni"><use href="#i-clock"/></svg><span>My Bets</span></a>
+      <a class="nav-item" data-page="profile"><svg class="ni"><use href="#i-user"/></svg><span>Profile</span></a>
+      <a class="nav-item" data-page="rewards"><svg class="ni"><use href="#i-gift"/></svg><span>Rewards</span></a>
+      <a class="nav-item" data-page="fairness" onclick="event.preventDefault(); togglePFOverlay();"><svg class="ni"><use href="#i-shield"/></svg><span>Fairness</span></a>
+      <a class="nav-item" data-page="transactions"><svg class="ni"><use href="#i-wallet"/></svg><span>Transactions</span></a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer" id="sidebarFooter">
+    <button class="login-btn" onclick="window.location.href='/auth/discord'">
+      <svg class="discord-icon" viewBox="0 0 24 24" width="18" height="18"><path fill="#fff" d="M20.317 4.369a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.054C1.483 12.518.583 16.58.979 20.567a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.46-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.473-4.592-.292-8.807-1.617-16.142a.072.072 0 0 0-.032-.054M8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419s.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418m7.975 0c-1.183 0-2.157-1.085-2.157-2.419s.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42 0 1.333-.947 2.418-2.157 2.418"/></svg>
+      <span>Login with Discord</span>
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+
+<div class="maintenance-banner" id="maintenanceBanner" style="display:none">
+  ⚠️ Casino is currently under maintenance. Please join our <a href="https://discord.gg/yourserver" id="maintDiscordLink" style="color:#fff;text-decoration:underline">Discord</a> to play.
+</div>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="hamburger" id="hamburger" aria-label="Menu" onclick="document.querySelector('.sidebar').classList.toggle('collapsed')">
+      <svg class="ni"><use href="#i-menu"/></svg>
+    </button>
+    <div class="top-tabs">
+      <button class="top-tab active" onclick="goPage('casino')"><span>Casino</span></button>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <a class="brand-logo" data-page="home" title="Flipbets">
+      <img class="brand-logo-img" src="assets/logo.svg" alt="Flipbets" />
+    </a>
+  </div>
+  <div class="topbar-right">
+    <div class="balance-pill" id="balancePill" onclick="openWalletModal()">
+      <span class="balance-amt" id="topBalanceAmt">$0.00</span>
+      <span class="balance-currency">
+        <img src="assets/icons/ltc.png" alt="LTC" class="ltc-coin"/>
+        <svg class="ni" style="width:10px;height:10px"><use href="#i-chev-down"/></svg>
+      </span>
+      <span class="balance-wager-badge" id="topWagerBadge" style="display:none" title="Wager requirement to unlock withdraw/tip">🔒</span>
+    </div>
+    <button class="top-btn primary" onclick="openWalletModal()">Wallet</button>
+    <button class="icon-btn notif-btn" id="notifBtn" title="Notifications" onclick="toggleNotifPanel()">
+      <svg class="ni"><use href="#i-bell"/></svg>
+      <span class="notif-dot" id="notifDot"></span>
+    </button>
+  </div>
+</header>
+
+<!-- Floating notification panel -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-head">
+    <b>Notifications</b>
+    <button class="notif-close" onclick="toggleNotifPanel()"><svg class="ni" style="width:14px;height:14px"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="notif-list" id="notifList">
+    <div class="notif-empty">No notifications yet</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<section class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg class="ni" style="width:14px;height:14px;color:var(--gold)"><use href="#i-fire"/></svg>
+        Provably Fair &middot; 3% House Edge
+      </div>
+      <h1 class="hero-title">The Crypto Casino<br/><span class="hero-grad">Built for Winners</span></h1>
+      <p class="hero-sub">Bet on Mines, Limbo, Blackjack, Coinflip, HiLo &amp; more.</p>
+      <div class="hero-ctas">
+        <button class="btn-primary" id="playDiscordBtn" onclick="playOnDiscord()">
+          <svg class="discord-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="#fff" d="M20.317 4.369a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.054C1.483 12.518.583 16.58.979 20.567a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.46-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.473-4.592-.292-8.807-1.617-16.142a.072.072 0 0 0-.032-.054M8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419s.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418m7.975 0c-1.183 0-2.157-1.085-2.157-2.419s.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42 0 1.333-.947 2.418-2.157 2.418"/></svg>
+          Play on Discord
+        </button>
+        <button class="btn-ghost" onclick="openVerifyModal()">
+          <svg class="ni" style="width:14px;height:14px"><use href="#i-shield"/></svg>
+          Verify a Bet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2><svg class="ni" style="width:18px;height:18px;color:var(--gold)"><use href="#i-fire"/></svg> Live Wins</h2>
+    <a class="section-more" data-page="leaderboard">View leaderboard &rarr;</a>
+  </div>
+  <div class="live-wins" id="liveWins">
+    <div class="live-win empty"><svg class="ni" style="width:24px;height:24px;color:var(--muted)"><use href="#i-fire"/></svg><span>No wins yet. Be the first!</span></div>
+  </div>
+
+  <div class="section-head">
+    <h2><svg class="ni" style="width:18px;height:18px;color:var(--accent)"><use href="#i-rocket"/></svg> Originals</h2>
+  </div>
+  <div class="game-grid">
+    <a class="game-card" data-page="mines">
+      <div class="game-card-img" style="background-image:url('assets/game_cards/mines.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-info"><b>Mines</b><span>Uncover gems, avoid bombs</span></div>
+    </a>
+    <a class="game-card" data-page="limbo">
+      <div class="game-card-img" style="background-image:url('assets/game_cards/limbo.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-info"><b>Limbo</b><span>Bet on a multiplier</span></div>
+    </a>
+    <a class="game-card" data-page="blackjack">
+      <div class="game-card-img" style="background-image:url('assets/game_cards/blackjack.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-info"><b>Blackjack</b><span>Beat the dealer to 21</span></div>
+    </a>
+    <a class="game-card" data-page="coinflip">
+      <div class="game-card-img" style="background-image:url('assets/game_cards/coinflip.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-info"><b>Coinflip</b><span>Heads or tails, 1.96x</span></div>
+    </a>
+    <a class="game-card" data-page="hilo">
+      <div class="game-card-img" style="background-image:url('assets/game_cards/hilo.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-info"><b>HiLo</b><span>Higher or lower, streak it</span></div>
+    </a>
+    <a class="game-card" data-page="wheel">
+      <div class="game-card-img" style="background-image:url('assets/game_cards/crash.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-info"><b>Wheel</b><span>Spin for up to 10x</span></div>
+    </a>
+  </div>
+</section>
+
+<!-- CASINO -->
+<section class="page" id="page-casino">
+  <div class="section-head"><h2>All Games</h2></div>
+  <div class="game-grid" id="casinoGrid"></div>
+</section>
+
+<!-- LEADERBOARD -->
+<section class="page" id="page-leaderboard">
+  <div class="section-head"><h2><svg class="ni" style="width:20px;height:20px;color:var(--gold)"><use href="#i-trophy"/></svg> Leaderboard</h2></div>
+
+  <div class="race-banner" id="raceBanner">
+    <div class="race-banner-bg"></div>
+    <div class="race-banner-content">
+      <div class="race-banner-left">
+        <div class="race-eyebrow"><svg class="ni" style="width:14px;height:14px"><use href="#i-trophy"/></svg> Weekly Wager Race</div>
+        <h3 id="raceTitle">$500 Weekly Wager Race</h3>
+        <div class="race-prize-row">
+          <div class="race-prize-stat">
+            <span>Prize Pool</span>
+            <b id="racePrizePool">$500.00</b>
+          </div>
+          <div class="race-prize-stat">
+            <span>Total Wagered</span>
+            <b id="raceTotalWagered">$0.00</b>
+          </div>
+          <div class="race-prize-stat">
+            <span>Players</span>
+            <b id="racePlayerCount">0</b>
+          </div>
+          <div class="race-prize-stat race-prize-timer">
+            <span>Ends In</span>
+            <b id="raceCountdown">--:--:--</b>
+          </div>
+        </div>
+      </div>
+      <div class="race-banner-right">
+        <div class="race-my-rank" id="raceMyRank" style="display:none">
+          <span>Your Rank</span>
+          <b id="raceMyRankNum">#—</b>
+          <small id="raceMyWagered">$0.00 wagered</small>
+        </div>
+      </div>
+    </div>
+    <div class="race-progress">
+      <div class="race-progress-bar" id="raceProgressBar"></div>
+    </div>
+  </div>
+
+  <div class="lb-tabs">
+    <button class="lb-tab active" data-lb="wagered">All-Time: By Wagered</button>
+    <button class="lb-tab" data-lb="profit">By Profit</button>
+    <button class="lb-tab" data-lb="wins">By Wins</button>
+  </div>
+  <div class="leaderboard" id="leaderboardList"></div>
+</section>
+
+<!-- HISTORY -->
+<section class="page" id="page-history">
+  <div class="section-head">
+    <h2><svg class="ni" style="width:18px;height:18px"><use href="#i-clock"/></svg> My Bet History</h2>
+    <div class="history-filters">
+      <select id="histFilterType" onchange="loadHistory()">
+        <option value="">All Games</option>
+        <option value="Mines">Mines</option>
+        <option value="Limbo">Limbo</option>
+        <option value="Blackjack">Blackjack</option>
+        <option value="Coinflip">Coinflip</option>
+        <option value="HiLo">HiLo</option>
+        <option value="Wheel">Wheel</option>
+      </select>
+      <select id="histFilterResult" onchange="loadHistory()">
+        <option value="">All Results</option>
+        <option value="win">Wins</option>
+        <option value="lose">Losses</option>
+      </select>
+    </div>
+  </div>
+  <div class="history-list" id="historyList"></div>
+</section>
+
+<!-- FAIRNESS -->
+<section class="page" id="page-fairness">
+  <div class="section-head">
+    <h2><svg class="ni" style="width:18px;height:18px"><use href="#i-shield"/></svg> Provably Fair</h2>
+    <button class="btn-ghost" onclick="rotateSeed()"><svg class="ni" style="width:14px;height:14px"><use href="#i-rotate"/></svg> Rotate Client Seed</button>
+  </div>
+  <div class="pf-page-grid">
+    <div class="pf-page-card">
+      <h4>Active Seeds</h4>
+      <div class="pf-row"><span>Server Seed (Hash)</span><code id="pfHash">—</code></div>
+      <div class="pf-row"><span>Client Seed</span><code id="pfClient">—</code></div>
+      <div class="pf-row"><span>Nonce</span><code id="pfNonce">0</code></div>
+      <div class="pf-row"><span>Total Bets</span><code id="pfBets">0</code></div>
+    </div>
+    <div class="pf-page-card">
+      <h4>How it works</h4>
+      <p style="color:var(--text2);font-size:13px;line-height:1.5">Each bet uses HMAC-SHA256 with your server seed (revealed after rotation) and client seed to produce verifiable outcomes. Rotate your client seed to start a new cycle; the next rotation reveals the previous server seed.</p>
+      <button class="btn-primary" onclick="togglePFOverlay()">Open Verify Tool</button>
+    </div>
+    <div class="pf-page-card" style="grid-column:1 / -1">
+      <h4>Recent Reveals</h4>
+      <div class="history-list" id="pfRevealsList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- REWARDS -->
+<section class="page" id="page-rewards">
+  <div class="section-head">
+    <h2><svg class="ni" style="width:18px;height:18px;color:var(--gold)"><use href="#i-gift"/></svg> Rewards</h2>
+    <div class="muted" style="font-size:12px">All bonus amounts, frequencies, and rakeback rates are managed by the admin panel.</div>
+  </div>
+
+  <div class="rewards-grid">
+    <div class="reward-card" data-reward="daily">
+      <div class="reward-icon" style="background:linear-gradient(135deg,#3b82f6,#5b8def)"><svg class="ni"><use href="#i-calendar"/></svg></div>
+      <div class="reward-body">
+        <h4>Daily Bonus</h4>
+        <p class="muted">Log in every day to claim free points. Streak bonuses for consecutive days.</p>
+        <div class="reward-stats">
+          <div><span>Amount</span><b id="rwDailyAmt">+1,000 pts</b></div>
+          <div><span>Cooldown</span><b id="rwDailyCd">24h</b></div>
+          <div><span>Status</span><b id="rwDailyStatus" class="rw-status">Loading�</b></div>
+        </div>
+        <button class="btn-primary rw-claim" id="rwDailyBtn" data-reward="daily" onclick="claimReward('daily')">Claim Daily</button>
+      </div>
+    </div>
+
+    <div class="reward-card" data-reward="weekly">
+      <div class="reward-icon" style="background:linear-gradient(135deg,#a855f7,#6366f1)"><svg class="ni"><use href="#i-week"/></svg></div>
+      <div class="reward-body">
+        <h4>Weekly Lossback</h4>
+        <p class="muted">Get a portion of your net losses back every week. Resets every Monday.</p>
+        <div class="reward-stats">
+          <div><span>Rate</span><b id="rwWeeklyRate">10%</b></div>
+          <div><span>Cap</span><b id="rwWeeklyCap">50,000 pts</b></div>
+          <div><span>Status</span><b id="rwWeeklyStatus" class="rw-status">Loading�</b></div>
+        </div>
+        <button class="btn-primary rw-claim" id="rwWeeklyBtn" data-reward="weekly" onclick="claimReward('weekly')">Claim Lossback</button>
+      </div>
+    </div>
+
+    <div class="reward-card" data-reward="monthly">
+      <div class="reward-icon" style="background:linear-gradient(135deg,#ff9b25,#ffd700)"><svg class="ni"><use href="#i-trophy"/></svg></div>
+      <div class="reward-body">
+        <h4>Monthly Bonus</h4>
+        <p class="muted">A monthly bonus for active players. Resets on the 1st of each month.</p>
+        <div class="reward-stats">
+          <div><span>Amount</span><b id="rwMonthlyAmt">+5,000 pts</b></div>
+          <div><span>Min Wager</span><b id="rwMonthlyWag">10,000 pts</b></div>
+          <div><span>Status</span><b id="rwMonthlyStatus" class="rw-status">Loading�</b></div>
+        </div>
+        <button class="btn-primary rw-claim" id="rwMonthlyBtn" data-reward="monthly" onclick="claimReward('monthly')">Claim Monthly</button>
+      </div>
+    </div>
+
+    <div class="reward-card" data-reward="rankup">
+      <div class="reward-icon" style="background:linear-gradient(135deg,#3b82f6,#a855f7)"><svg class="ni"><use href="#i-medal"/></svg></div>
+      <div class="reward-body">
+        <h4>Rankup Reward</h4>
+        <p class="muted">Earn a one-time bonus every time you level up to a new rank.</p>
+        <div class="reward-stats">
+          <div><span>Current Rank</span><b id="rwRankCurrent">Bronze</b></div>
+          <div><span>Next Bonus</span><b id="rwRankNext">+2,500 pts</b></div>
+          <div><span>Status</span><b id="rwRankStatus" class="rw-status">Auto-credited</b></div>
+        </div>
+        <button class="btn-ghost" disabled>Auto on Rank Up</button>
+      </div>
+    </div>
+
+    <div class="reward-card" data-reward="rakeback">
+      <div class="reward-icon" style="background:linear-gradient(135deg,#10b981,#3b82f6)"><svg class="ni"><use href="#i-percent"/></svg></div>
+      <div class="reward-body">
+        <h4>Rakeback</h4>
+        <p class="muted">Earn a percentage of the house edge on every bet. Paid out in real time.</p>
+        <div class="reward-stats">
+          <div><span>Rate</span><b id="rwRakeRate">5%</b></div>
+          <div><span>Today</span><b id="rwRakeToday">+0 pts</b></div>
+          <div><span>Lifetime</span><b id="rwRakeLife">+0 pts</b></div>
+        </div>
+        <button class="btn-ghost" disabled>Auto-credit</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="reward-promo">
+    <div class="reward-promo-head">
+      <div class="reward-promo-icon"><svg class="ni" style="width:24px;height:24px"><use href="#i-gift"/></svg></div>
+      <div>
+        <h3>Have a promo code?</h3>
+        <p class="muted">Enter your code below to claim a bonus.</p>
+      </div>
+    </div>
+    <form class="reward-promo-form" onsubmit="claimPromoCode(event)">
+      <input type="text" id="rwPromoInput" placeholder="Enter code (e.g. WELCOME100)" maxlength="32" autocomplete="off"/>
+      <button type="submit" class="btn-primary">Claim</button>
+    </form>
+    <div class="reward-promo-msg" id="rwPromoMsg"></div>
+  </div>
+
+  <div class="rewards-history">
+    <h3 class="wpanel-h3" style="margin-top:20px">Recent Reward Claims</h3>
+    <div class="history-list" id="rwHistoryList"><div class="muted" style="padding:20px;text-align:center">No rewards claimed yet.</div></div>
+  </div>
+</section>
+
+<!-- ADMIN PANEL -->
+<section class="page" id="page-adminpanel">
+  <div id="adminGate" style="padding:60px 20px;text-align:center">
+    <div style="font-size:48px;color:var(--red)"><svg class="ni" style="width:64px;height:64px"><use href="#i-shield"/></svg></div>
+    <h2 style="color:var(--red);margin:12px 0">Access Denied</h2>
+    <p class="muted">This page is only available to authorized administrators.</p>
+    <button class="btn-primary" style="margin-top:16px" onclick="goPage('home')">Back to Home</button>
+  </div>
+  <div id="adminContent" style="display:none">
+    <div class="section-head">
+      <h2><svg class="ni" style="width:18px;height:18px;color:var(--red)"><use href="#i-shield"/></svg> Admin Panel</h2>
+      <div class="muted" style="font-size:12px">You are signed in as an administrator. All actions are logged.</div>
+    </div>
+
+    <div class="admin-tabs" id="adminTabs">
+      <button class="admin-tab active" data-atab="global" onclick="switchAdminTab('global')"><svg class="ni"><use href="#i-display"/></svg> Global</button>
+      <button class="admin-tab" data-atab="users" onclick="switchAdminTab('users')"><svg class="ni"><use href="#i-user"/></svg> Users</button>
+      <button class="admin-tab" data-atab="games" onclick="switchAdminTab('games')"><svg class="ni"><use href="#i-dice"/></svg> Games</button>
+      <button class="admin-tab" data-atab="rewards" onclick="switchAdminTab('rewards')"><svg class="ni"><use href="#i-gift"/></svg> Rewards</button>
+      <button class="admin-tab" data-atab="races" onclick="switchAdminTab('races')"><svg class="ni"><use href="#i-trophy"/></svg> Races</button>
+      <button class="admin-tab" data-atab="utility" onclick="switchAdminTab('utility')"><svg class="ni"><use href="#i-settings"/></svg> Utility</button>
+    </div>
+
+    <div class="admin-panel" data-apanel="global">
+      <div class="admin-grid">
+        <div class="admin-card"><div class="ac-label">Total Wagered</div><div class="ac-val" id="gsWagered">$0.00</div></div>
+        <div class="admin-card"><div class="ac-label">Total Deposits</div><div class="ac-val" id="gsDeposits">$0.00</div></div>
+        <div class="admin-card"><div class="ac-label">Total Withdrawals</div><div class="ac-val" id="gsWithdrawals">$0.00</div></div>
+        <div class="admin-card"><div class="ac-label">Total Players</div><div class="ac-val" id="gsPlayers">0</div></div>
+        <div class="admin-card"><div class="ac-label">Total Bets</div><div class="ac-val" id="gsBets">0</div></div>
+        <div class="admin-card"><div class="ac-label">House Profit</div><div class="ac-val" id="gsProfit" style="color:var(--green)">$0.00</div></div>
+      </div>
+      <div class="admin-card" style="margin-top:14px">
+        <h4>Global House Edge (default)</h4>
+        <div class="admin-row">
+          <label>Default House Edge %</label>
+          <input type="number" id="cfgHouseEdge" class="ctrl-input" step="0.1" min="0" max="20" value="2"/>
+          <button class="btn-primary" onclick="adminSaveGlobal()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel" data-apanel="users" style="display:none">
+      <div class="admin-toolbar">
+        <input type="text" id="userSearch" class="ctrl-input" placeholder="Search username, ID, email…" oninput="adminLoadUsers()"/>
+        <select id="userSort" class="ctrl-input" onchange="adminLoadUsers()">
+          <option value="createdAt">Joined</option>
+          <option value="balance">Balance</option>
+          <option value="totalWagered">Wagered</option>
+          <option value="totalDeposited">Deposited</option>
+          <option value="gamesPlayed">Games</option>
+        </select>
+        <button class="btn-primary" onclick="adminLoadUsers()"><svg class="ni"><use href="#i-search"/></svg> Search</button>
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg2);border:1px solid var(--line2);border-radius:8px">
+          <svg class="ni" style="color:var(--red)"><use href="#i-percent"/></svg>
+          <span style="font-size:12px;font-weight:700;color:var(--text2)">Global Rigg:</span>
+          <input type="number" id="globalRiggInput" class="ctrl-input" min="0" max="100" step="1" value="0" style="width:80px;text-align:center"/>
+          <span style="font-size:11px;color:var(--muted)">%</span>
+          <button class="btn-danger" onclick="adminGlobalRigg()" title="Apply this rigg% to EVERY user">Apply to ALL</button>
+        </div>
+      </div>
+      <div id="adminUsersList" class="admin-users-grid"></div>
+    </div>
+
+    <div class="admin-panel" data-apanel="user-detail" style="display:none">
+      <div class="section-head" style="margin-top:0">
+        <h3 id="adUserTitle">User Detail</h3>
+        <button class="btn-ghost" onclick="switchAdminTab('users')">← Back to Users</button>
+      </div>
+      <div id="adUserContent"></div>
+    </div>
+
+    <div class="admin-panel" data-apanel="games" style="display:none">
+      <div id="adminGamesList" class="admin-games-grid"></div>
+    </div>
+
+    <div class="admin-panel" data-apanel="game-detail" style="display:none">
+      <div class="section-head" style="margin-top:0">
+        <h3 id="adGameTitle">Game Detail</h3>
+        <button class="btn-ghost" onclick="switchAdminTab('games')">← Back to Games</button>
+      </div>
+      <div id="adGameContent"></div>
+    </div>
+
+    <div class="admin-panel" data-apanel="rewards" style="display:none">
+      <div class="admin-card">
+        <h4>Daily Bonus</h4>
+        <div class="admin-row"><label>Amount (pts)</label><input type="number" id="cfgDailyAmt" class="ctrl-input" min="0"/><label>Enabled</label><input type="checkbox" id="cfgDailyOn"/></div>
+      </div>
+      <div class="admin-card">
+        <h4>Weekly Lossback</h4>
+        <div class="admin-row"><label>Lossback %</label><input type="number" id="cfgWeeklyPct" class="ctrl-input" step="0.1" min="0" max="100"/><label>Cap (pts)</label><input type="number" id="cfgWeeklyCap" class="ctrl-input" min="0"/><label>Enabled</label><input type="checkbox" id="cfgWeeklyOn"/></div>
+      </div>
+      <div class="admin-card">
+        <h4>Monthly Bonus</h4>
+        <div class="admin-row"><label>Amount (pts)</label><input type="number" id="cfgMonthlyAmt" class="ctrl-input" min="0"/><label>Min Wager (pts)</label><input type="number" id="cfgMonthlyWag" class="ctrl-input" min="0"/><label>Enabled</label><input type="checkbox" id="cfgMonthlyOn"/></div>
+      </div>
+      <div class="admin-card">
+        <h4>Rakeback</h4>
+        <div class="admin-row"><label>Rakeback % (of wager)</label><input type="number" id="cfgRakePct" class="ctrl-input" step="0.01" min="0" max="100" value="0.1"/><label>Enabled</label><input type="checkbox" id="cfgRakeOn"/></div>
+        <div class="muted" style="font-size:11px;margin-top:6px">Rakeback is NOT auto-credited. It accrues to user balance when claimed manually.</div>
+      </div>
+      <div class="admin-card">
+        <h4>Rankup Rewards</h4>
+        <div class="admin-row" style="flex-wrap:wrap;gap:8px">
+          <label>Bronze</label><input type="number" id="cfgRankBronze" class="ctrl-input" style="width:90px"/>
+          <label>Silver</label><input type="number" id="cfgRankSilver" class="ctrl-input" style="width:90px"/>
+          <label>Gold</label><input type="number" id="cfgRankGold" class="ctrl-input" style="width:90px"/>
+          <label>Platinum</label><input type="number" id="cfgRankPlatinum" class="ctrl-input" style="width:90px"/>
+          <label>Diamond</label><input type="number" id="cfgRankDiamond" class="ctrl-input" style="width:90px"/>
+          <label>Emerald</label><input type="number" id="cfgRankEmerald" class="ctrl-input" style="width:90px"/>
+          <label>Ruby</label><input type="number" id="cfgRankRuby" class="ctrl-input" style="width:90px"/>
+          <label>Celestial</label><input type="number" id="cfgRankCelestial" class="ctrl-input" style="width:90px"/>
+          <label>Eternal</label><input type="number" id="cfgRankEternal" class="ctrl-input" style="width:90px"/>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="adminSaveRewards()" style="margin-top:14px">Save All Rewards</button>
+
+      <div class="admin-card" style="margin-top:18px">
+        <h4>Promo Codes</h4>
+        <div class="admin-row" style="flex-wrap:wrap;gap:8px">
+          <input type="text" id="prCode" class="ctrl-input" placeholder="CODE" style="text-transform:uppercase"/>
+          <input type="number" id="prAmount" class="ctrl-input" placeholder="Amount" min="1"/>
+          <input type="number" id="prMax" class="ctrl-input" placeholder="Max Uses" min="1" value="1"/>
+          <input type="number" id="prWager" class="ctrl-input" placeholder="Wager Req" min="0" value="0"/>
+          <input type="number" id="prWagerMult" class="ctrl-input" placeholder="Wager Mult (×)" min="0" step="0.1" value="2" title="Multiplier for amount → required wager (default 2 = 2x)"/>
+          <input type="number" id="prWdrWager" class="ctrl-input" placeholder="Wager to Withdraw" min="0" value="0"/>
+          <input type="text" id="prMinRank" class="ctrl-input" placeholder="Min Rank (Bronze/Silver/...)" />
+          <button class="btn-primary" onclick="adminCreatePromo()">Create Promo</button>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:6px">Tip: <code>Wager Mult</code> = required wager is Amount × Mult (e.g. 10 × 2 = 20 pts wager needed before withdraw).</div>
+        <div id="adminPromoList" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <div class="admin-panel" data-apanel="utility" style="display:none">
+      <div class="admin-card">
+        <h4>Withdrawl Settings</h4>
+        <div class="admin-row"><label>Withdrawls Enabled</label><input type="checkbox" id="cfgWdrOn"/></div>
+        <div class="admin-row"><label>Auto Withdrawl</label><input type="checkbox" id="cfgAutoWdr"/></div>
+        <div class="admin-row"><label>Manual Withdrawl</label><input type="checkbox" id="cfgManualWdr"/></div>
+        <div class="admin-row"><label>Minimum Withdrawl (pts)</label><input type="number" id="cfgMinWdr" class="ctrl-input" min="0"/></div>
+        <div class="admin-row"><label>Maximum Withdrawl (pts)</label><input type="number" id="cfgMaxWdr" class="ctrl-input" min="0" value="100000"/></div>
+        <button class="btn-primary" onclick="adminSaveUtility()">Save Withdrawl Settings</button>
+      </div>
+      <div class="admin-card">
+        <h4>Casino Mode</h4>
+        <div class="admin-row"><label>Casino Under Maintenance</label><input type="checkbox" id="cfgMaintenance"/></div>
+        <div class="admin-row"><label>Wager Race Enabled</label><input type="checkbox" id="cfgWagerRace" checked/></div>
+        <div class="admin-row"><label>Discord Invite URL</label><input type="text" id="cfgDiscordInvite" class="ctrl-input" placeholder="https://discord.gg/..."/></div>
+        <button class="btn-primary" onclick="adminSaveUtility()">Save Casino Settings</button>
+        <div class="muted" style="font-size:11px;margin-top:6px">When maintenance is ON, only admins can play. Users will see a banner.</div>
+      </div>
+      <div class="admin-card">
+        <h4>Apirone (LTC)</h4>
+        <div class="admin-row"><label>Status</label><span id="apiApironeStatus" class="badge-pending">checking…</span></div>
+        <div class="admin-row"><label>Account ID</label><span id="apiApironeId" class="muted">—</span></div>
+        <div class="admin-row"><label>Callback URL</label><span id="apiApironeCb" class="muted" style="word-break:break-all">—</span></div>
+        <div class="admin-row"><label>1 LTC ≈</label><span id="apiApironeRate" class="muted">—</span></div>
+        <div class="muted" style="font-size:11px;margin-top:6px">Set this Callback URL in your Apirone merchant dashboard to auto-credit LTC deposits. The poller runs every 60s as backup.</div>
+      </div>
+      <div class="admin-card" style="border-color:var(--red)">
+        <h4 style="color:var(--red)">Danger Zone</h4>
+        <div class="admin-row" style="flex-direction:column;align-items:stretch;gap:8px">
+          <button class="btn-danger" onclick="adminResetAllStats()">Reset ALL Statistics (keeps users)</button>
+          <button class="btn-danger" onclick="adminResetDatabase()">⚠️ Reset ENTIRE Database (deletes everything)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel" data-apanel="races" style="display:none">
+      <div class="admin-card">
+        <h4><svg class="ni" style="width:16px;height:16px;color:var(--gold)"><use href="#i-trophy"/></svg> Current Race</h4>
+        <div id="raceCurrentCard" class="muted">Loading...</div>
+      </div>
+      <div class="admin-card">
+        <h4>Start a New Race</h4>
+        <div class="admin-row"><label>Title</label><input type="text" id="raceNewTitle" class="ctrl-input" placeholder="Weekly Wager Race"/></div>
+        <div class="admin-row"><label>Prize Pool (pts)</label><input type="number" id="raceNewPool" class="ctrl-input" min="0" value="50000"/></div>
+        <div class="admin-row"><label>Duration (days)</label><input type="number" id="raceNewDays" class="ctrl-input" min="1" value="7"/></div>
+        <div class="admin-row"><label>Distribution (% — top 6: 40/25/15/10/7/3 by default)</label><input type="text" id="raceNewDist" class="ctrl-input" placeholder="40,25,15,10,7,3"/></div>
+        <button class="btn-primary" onclick="adminCreateRace()">End Current &amp; Start New</button>
+        <div class="muted" style="font-size:11px;margin-top:6px">This will mark the current race as ended and create a new one with the configured prize pool.</div>
+      </div>
+      <div class="admin-card">
+        <h4>Race History</h4>
+        <div id="raceHistoryList" class="muted">Loading...</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFILE -->
+<section class="page" id="page-profile">
+  <div class="profile-hero">
+    <div class="profile-banner"></div>
+    <div class="profile-avatar-wrap">
+      <img id="profileAvatar" class="profile-avatar" src="" alt="" />
+    </div>
+    <div class="profile-info">
+      <div class="profile-name-row">
+        <h1 id="profileName">Loading&hellip;</h1>
+        <span class="profile-rank-tag" id="profileRankTag"><img id="profileRankImg" src="/assets/ranks/bronze.webp" alt=""><span id="profileRankLabel">Bronze</span></span>
+      </div>
+      <div class="profile-handle" id="profileHandle">@user</div>
+      <div class="profile-rank-row">
+        <div class="profile-rank-bar"><div class="profile-rank-fill" id="profileRankFill"></div></div>
+        <span id="profileRankText">Bronze &rarr; Silver</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-cols">
+    <div class="profile-col">
+      <h3><svg class="ni" style="width:15px;height:15px;color:var(--accent)"><use href="#i-bolt"/></svg> Stats</h3>
+      <div class="profile-stats">
+        <div class="ps-card"><span>Balance</span><b id="psBalance">0</b></div>
+        <div class="ps-card"><span>Wagered</span><b id="psWagered">0</b></div>
+        <div class="ps-card"><span>Games</span><b id="psGames">0</b></div>
+        <div class="ps-card"><span>Win Rate</span><b id="psWinrate">0%</b></div>
+        <div class="ps-card"><span>Wins</span><b id="psWins">0</b></div>
+        <div class="ps-card"><span>Losses</span><b id="psLosses">0</b></div>
+      </div>
+    </div>
+    <div class="profile-col">
+      <h3><svg class="ni" style="width:15px;height:15px;color:var(--gold)"><use href="#i-wallet"/></svg> Wallet</h3>
+      <div class="profile-wallet-grid">
+        <div class="pw-card"><span>Deposited</span><b id="pwDep">$0.00</b></div>
+        <div class="pw-card"><span>Withdrawn</span><b id="pwWdr">$0.00</b></div>
+        <div class="pw-card"><span>Wagered</span><b id="pwWag">$0.00</b></div>
+        <div class="pw-card profit"><span>Net Profit</span><b id="pwProfit">$0.00</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-ranks">
+    <h3><svg class="ni" style="width:15px;height:15px;color:var(--gold)"><use href="#i-trophy"/></svg> All Ranks &amp; Wager Requirements</h3>
+    <div class="profile-ranks-grid" id="profileRanksGrid"></div>
+  </div>
+
+  <div class="profile-recent">
+    <h3><svg class="ni" style="width:14px;height:14px;color:var(--text2)"><use href="#i-clock"/></svg> Recent Games</h3>
+    <div class="history-list" id="profileRecent"></div>
+  </div>
+</section>
+
+<!-- TRANSACTIONS PAGE -->
+<section class="page" id="page-transactions">
+  <div class="section-head"><h2><svg class="ni" style="width:20px;height:20px;color:var(--accent)"><use href="#i-wallet"/></svg> Transactions</h2></div>
+  <div class="tx-tabs" style="margin-bottom:16px">
+    <button class="tx-tab active" data-txtab="all" onclick="switchTxTab('all')">All</button>
+    <button class="tx-tab" data-txtab="deposit" onclick="switchTxTab('deposit')">Deposits</button>
+    <button class="tx-tab" data-txtab="withdraw" onclick="switchTxTab('withdraw')">Withdrawals</button>
+    <button class="tx-tab" data-txtab="bonus" onclick="switchTxTab('bonus')">Bonuses</button>
+  </div>
+  <div class="tx-list" id="txListPage">
+    <div class="history-empty">Loading&hellip;</div>
+  </div>
+</section>
+
+<!-- ============== GAME PAGES ============== -->
+<!-- Each game page uses a common game-shell structure with a bet panel on left -->
+
+<!-- MINES -->
+<section class="page" id="page-mines">
+  <div class="game-shell">
+    <div class="game-tabs">
+      <button class="game-tab active"><span>Manual</span></button>
+
+    </div>
+    <div class="game-layout">
+      <div class="game-side">
+        <div class="game-control">
+          <div class="ctrl-block">
+            <div class="ctrl-label">Bet Amount <span class="ctrl-currency" id="minesCurrency">$ 0.00</span></div>
+            <div class="bet-row">
+              <input type="number" id="minesBet" class="bet-input" value="10" min="1" step="1"/>
+              <div class="bet-side">
+                <button class="bet-mini" onclick="minesHalve()">1/2</button>
+                <button class="bet-mini" onclick="minesDouble()">2&times;</button>
+              </div>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">Mines</div>
+            <div class="ctrl-select">
+              <select id="minesCountSelect" onchange="setMinesCount(parseInt(this.value))">
+                <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
+                <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                <option value="13">13</option><option value="14">14</option><option value="15">15</option>
+                <option value="16">16</option><option value="17">17</option><option value="18">18</option>
+                <option value="19">19</option><option value="20">20</option><option value="21">21</option>
+                <option value="22">22</option><option value="23">23</option>
+                <option value="24">24</option>
+              </select>
+            </div>
+          </div>
+          <button class="gc-play" id="minesBetBtn" onclick="minesStart()"><span>Bet</span></button>
+          <button class="gc-secondary" id="minesRandomBtn" onclick="minesRandom()">Random Pick</button>
+          <div class="ctrl-block">
+            <div class="ctrl-profit">
+              <span>Total Profit (<b id="minesCurrentMult">1.00</b>&times;)</span>
+              <b id="minesCurrentProfit">$ 0.00</b>
+            </div>
+          </div>
+        </div>
+        <div class="game-bottom-row">
+          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
+          <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
+        </div>
+      </div>
+      <div class="game-canvas">
+        <div class="mines-board-wrap">
+          <div class="mines-grid" id="minesGrid"></div>
+          <div class="mines-cashout-overlay" id="minesCashoutOverlay">
+            <div class="mines-cashout-inner">
+              <div class="mines-cashout-label">Cashed out</div>
+              <div class="mines-cashout-mult" id="minesCashoutMult">2.45x</div>
+              <div class="mines-cashout-payout" id="minesCashoutPayout">+1,225 pts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BLACKJACK -->
+<section class="page" id="page-blackjack">
+  <div class="game-shell">
+    <div class="game-tabs">
+      <button class="game-tab active"><span>Manual</span></button>
+
+    </div>
+    <div class="game-layout">
+      <div class="game-side">
+        <div class="game-control">
+          <div class="ctrl-block">
+            <div class="ctrl-label">Bet Amount <span class="ctrl-currency" id="bjCurrency">$ 0.00</span></div>
+            <div class="bet-row">
+              <input type="number" id="bjBet" class="bet-input" value="10" min="1" step="1"/>
+              <div class="bet-side">
+                <button class="bet-mini" onclick="bjHalve()">1/2</button>
+                <button class="bet-mini" onclick="bjDouble()">2&times;</button>
+              </div>
+            </div>
+          </div>
+          <div class="bj-actions" id="bjActions">
+            <button class="gc-play" id="bjDealBtn" onclick="bjDeal()"><span>Deal</span></button>
+          </div>
+        </div>
+        <div class="game-bottom-row">
+          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
+          <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
+        </div>
+      </div>
+      <div class="game-canvas">
+        <div class="bj-table">
+          <div class="bj-deck-area" id="bjDeck">
+            <div class="bj-deck-stack"></div><div class="bj-deck-stack"></div>
+            <div class="bj-deck-stack"></div><div class="bj-deck-stack"></div>
+            <div class="bj-deck-stack"></div><div class="bj-deck-stack bj-deck-top"></div>
+          </div>
+          <div class="bj-zone bj-zone-dealer">
+            <div class="bj-zone-label">Dealer <span id="bjDealerScore" class="bj-score">&mdash;</span></div>
+            <div class="bj-hand" id="bjDealerHand"></div>
+          </div>
+          <div class="bj-pot" id="bjPot">$ 0.00</div>
+          <div class="bj-zone bj-zone-player">
+            <div class="bj-zone-label">You <span id="bjPlayerScore" class="bj-score">&mdash;</span></div>
+            <div class="bj-hand" id="bjPlayerHand"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIMBO -->
+<section class="page" id="page-limbo">
+  <div class="game-shell">
+    <div class="game-tabs">
+      <button class="game-tab active"><span>Manual</span></button>
+
+    </div>
+    <div class="game-layout">
+      <div class="game-side">
+        <div class="game-control">
+          <div class="ctrl-block">
+            <div class="ctrl-label">Bet Amount <span class="ctrl-currency" id="limCurrency">$ 0.00</span></div>
+            <div class="bet-row">
+              <input type="number" id="limBet" class="bet-input" value="10" min="1" step="1"/>
+              <div class="bet-side">
+                <button class="bet-mini" onclick="limHalve()">1/2</button>
+                <button class="bet-mini" onclick="limDouble()">2&times;</button>
+              </div>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">Target Multiplier</div>
+            <div class="ctrl-select">
+              <input type="number" id="limTarget" value="2.00" min="1.01" step="0.01"/>
+              <span class="ctrl-suffix">&times;</span>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">Win Chance</div>
+            <div class="ctrl-readonly" id="limWinChance">49%</div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">Profit on Win</div>
+            <div class="ctrl-readonly" id="limProfit">$ 100.00</div>
+          </div>
+          <button class="gc-play" id="limBetBtn" onclick="limPlay()"><span>Bet</span></button>
+        </div>
+        <div class="game-bottom-row">
+          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
+          <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
+        </div>
+      </div>
+      <div class="game-canvas">
+        <div class="lim-stage">
+          <div class="lim-recent" id="limRecent"></div>
+          <div class="lim-display">
+            <div class="lim-mult" id="limMultVal">1.00&times;</div>
+            <div class="lim-status" id="limStatus">Place a bet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COINFLIP -->
+<section class="page" id="page-coinflip">
+  <div class="game-shell">
+    <div class="game-tabs">
+      <button class="game-tab active"><span>Manual</span></button>
+
+    </div>
+    <div class="game-layout">
+      <div class="game-side">
+        <div class="game-control">
+          <div class="ctrl-block">
+            <div class="ctrl-label">Bet Amount <span class="ctrl-currency" id="cfCurrency">$ 0.00</span></div>
+            <div class="bet-row">
+              <input type="number" id="cfBet" class="bet-input" value="10" min="1" step="1"/>
+              <div class="bet-side">
+                <button class="bet-mini" onclick="cfHalve()">1/2</button>
+                <button class="bet-mini" onclick="cfDouble()">2&times;</button>
+              </div>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">Pick a side</div>
+            <div class="cf-pick">
+              <button class="cf-pick-btn active" data-side="heads" onclick="cfPick('heads')">
+                <svg class="ni"><use href="#i-arrow-up"/></svg><span>Heads</span>
+              </button>
+              <button class="cf-pick-btn" data-side="tails" onclick="cfPick('tails')">
+                <svg class="ni"><use href="#i-arrow-down"/></svg><span>Tails</span>
+              </button>
+            </div>
+          </div>
+          <button class="gc-play" id="cfBetBtn" onclick="cfFlip()"><span>Flip Coin</span></button>
+          <div class="ctrl-block">
+            <div class="ctrl-profit"><span>Payout (1.96&times;)</span><b id="cfPayout">$ 0.00</b></div>
+          </div>
+        </div>
+        <div class="game-bottom-row">
+          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
+          <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
+        </div>
+      </div>
+      <div class="game-canvas">
+        <div class="cf-stage">
+          <div class="cf-coin-wrap">
+            <div class="cf-coin" id="cfCoin">
+              <div class="cf-face cf-face-heads"><img src="assets/coins/heads.svg" alt="Heads" class="cf-coin-img"/></div>
+              <div class="cf-face cf-face-tails"><img src="assets/coins/tails.svg" alt="Tails" class="cf-coin-img"/></div>
+              <div class="cf-edge"></div>
+            </div>
+          </div>
+          <div class="cf-result" id="cfResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HILO -->
+<section class="page" id="page-hilo">
+  <div class="game-shell">
+    <div class="game-tabs">
+      <button class="game-tab active"><span>Manual</span></button>
+
+    </div>
+    <div class="game-layout">
+      <div class="game-side">
+        <div class="game-control">
+          <div class="ctrl-block">
+            <div class="ctrl-label">Bet Amount <span class="ctrl-currency" id="hlCurrency">$ 0.00</span></div>
+            <div class="bet-row">
+              <input type="number" id="hlBet" class="bet-input" value="10" min="1" step="1"/>
+              <div class="bet-side">
+                <button class="bet-mini" onclick="hlHalve()">1/2</button>
+                <button class="bet-mini" onclick="hlDouble()">2&times;</button>
+              </div>
+            </div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">Current Streak</div>
+            <div class="ctrl-readonly"><b id="hlStreakVal">0</b> in a row</div>
+          </div>
+          <div class="ctrl-block">
+            <div class="ctrl-label">Next Win Pays</div>
+            <div class="ctrl-readonly" id="hlNextWin">$ 0.00</div>
+          </div>
+          <div class="hl-actions" id="hlActions">
+            <button class="gc-play" id="hlStartBtn" onclick="hlStart()"><span>Start</span></button>
+          </div>
+        </div>
+        <div class="game-bottom-row">
+          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
+          <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
+        </div>
+      </div>
+      <div class="game-canvas">
+        <div class="hl-stage">
+          <div class="hl-streak-display" id="hlStreakDisplay">
+            <div class="hl-mult" id="hlMult">1.00&times;</div>
+            <div class="hl-streak-label" id="hlStreakLbl">Streak: 0</div>
+          </div>
+          <div class="hl-cards">
+            <div class="hl-card" id="hlCardPrev"></div>
+            <div class="hl-arrow">
+              <svg class="ni" style="width:32px;height:32px"><use href="#i-arrow-up"/></svg>
+            </div>
+            <div class="hl-card hl-card-hidden" id="hlCardNext">?</div>
+          </div>
+          <div class="hl-stats" id="hlStats">Pick higher or lower to start.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHEEL -->
+<section class="page" id="page-wheel">
+  <div class="game-shell">
+    <div class="game-tabs">
+      <button class="game-tab active"><span>Manual</span></button>
+
+    </div>
+    <div class="game-layout">
+      <div class="game-side">
+        <div class="game-control">
+          <div class="ctrl-block">
+            <div class="ctrl-label">Bet Amount <span class="ctrl-currency">$ 0.00</span></div>
+            <div class="bet-row">
+              <input type="number" id="whlBet" class="bet-input" value="0" min="0" step="0.01"/>
+              <div class="bet-side">
+                <button class="bet-mini" onclick="whlHalve()">1/2</button>
+                <button class="bet-mini" onclick="whlDouble()">2&times;</button>
+              </div>
+            </div>
+          </div>
+          <button class="gc-play" onclick="whlSpin()"><span>Spin</span></button>
+        </div>
+        <div class="game-bottom-row">
+          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
+          <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
+        </div>
+      </div>
+      <div class="game-canvas">
+        <div class="cf-stage">
+          <div class="whl-wrap">
+            <div class="whl-pointer">&#9660;</div>
+            <div class="whl" id="whlWheel">
+              <div class="whl-seg" style="--c:#ed4245">2x</div>
+              <div class="whl-seg" style="--c:#3b82f6">1.5x</div>
+              <div class="whl-seg" style="--c:#22d3ee">3x</div>
+              <div class="whl-seg" style="--c:#fbbf24">1.2x</div>
+              <div class="whl-seg" style="--c:#a855f7">5x</div>
+              <div class="whl-seg" style="--c:#f97316">10x</div>
+              <div class="whl-seg" style="--c:#06b6d4">1.1x</div>
+              <div class="whl-seg" style="--c:#ec4899">0x</div>
+            </div>
+          </div>
+          <div class="cf-result" id="whlResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM BAR (game pages only) -->
+<div class="game-bottombar" id="gameBottombar" style="position:fixed">
+  <div class="gb-left">
+    <button class="gb-btn" id="settingsBtn" title="Settings"><svg class="ni"><use href="#i-settings"/></svg></button>
+    <button class="gb-btn" onclick="toggleFloatingStats()" title="Stats"><svg class="ni"><use href="#i-stats"/></svg></button>
+  </div>
+  <div class="gb-center">
+    <img class="gb-logo-img" src="assets/logo.svg" alt="Flipbets" />
+  </div>
+  <div class="gb-right">
+    <button class="gb-btn fairness" onclick="togglePFOverlay()"><svg class="ni" style="color:var(--accent)"><use href="#i-shield"/></svg><span>Fairness</span></button>
+  </div>
+</div>
+<button class="support-fab" onclick="toast('Support: contact us on Discord')"><svg class="ni"><use href="#i-headphones"/></svg></button>
+
+</main>
+
+<!-- Floating Stats Box -->
+<div class="floating-stats" id="floatingStats" style="display:none">
+  <div class="fs-head" id="fsDragHandle">
+    <b>Session Stats</b>
+    <div style="display:flex;gap:4px">
+      <button class="fs-refresh" onclick="resetSessionStats()" title="Reset session stats"><svg class="ni" style="width:14px;height:14px"><use href="#i-rotate"/></svg></button>
+      <button class="fs-close" onclick="closeFloatingStats()"><svg class="ni" style="width:14px;height:14px"><use href="#i-x"/></svg></button>
+    </div>
+  </div>
+  <div class="fs-body">
+    <div class="fs-stats">
+      <div class="fs-card"><span>Bets</span><b id="fsBets">0</b></div>
+      <div class="fs-card"><span>Wins</span><b id="fsWins">0</b></div>
+      <div class="fs-card"><span>Losses</span><b id="fsLosses">0</b></div>
+      <div class="fs-card"><span>P&amp;L</span><b id="fsPl">$0.00</b></div>
+    </div>
+    <div class="fs-meta">
+      <span id="fsLastUpdate">Never</span>
+      <span>•</span>
+      <span>Auto-refreshes every 4s</span>
+    </div>
+    <canvas id="fsChart" width="360" height="140"></canvas>
+  </div>
+</div>
+
+<!-- Provably Fair Overlay -->
+<div class="pf-overlay" id="pfOverlay" style="display:none" onclick="closePFOverlay(event)">
+  <div class="pf-overlay-card">
+    <div class="pf-overlay-head">
+      <svg class="ni" style="width:28px;height:28px;color:var(--accent)"><use href="#i-shield"/></svg>
+      <h2>Provably Fair</h2>
+      <button onclick="closePFOverlay()"><svg class="ni" style="width:16px;height:16px"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="pf-overlay-body">
+      <p class="muted" style="margin-bottom:12px">Every game outcome is cryptographically verifiable.</p>
+      <div class="pf-tabs">
+        <button class="pf-tab active" data-pf="overview" onclick="switchPFTab('overview')">Overview</button>
+        <button class="pf-tab" data-pf="seeds" onclick="switchPFTab('seeds')">Seeds</button>
+        <button class="pf-tab" data-pf="verify" onclick="switchPFTab('verify')">Verify</button>
+      </div>
+      <div class="pf-panels">
+        <div class="pf-panel active" data-pf-panel="overview">
+          <h3>How it works</h3>
+          <ol class="pf-steps">
+            <li><b>Server seed hash</b> is shown <i>before</i> the bet.</li>
+            <li>You provide a <b>client seed</b>.</li>
+            <li>Result = <code>HMAC(serverSeed, clientSeed:nonce)</code>.</li>
+            <li>After the bet, the unhashed server seed is revealed.</li>
+          </ol>
+          <div class="pf-betcount">Total bets on this seed: <b id="pfBetCount">0</b></div>
+        </div>
+        <div class="pf-panel" data-pf-panel="seeds">
+          <div class="pf-row"><label>Active Server Seed Hash</label><div class="pf-val mono" id="pfActiveHash">&mdash;</div></div>
+          <div class="pf-row"><label>Client Seed</label><div class="pf-val mono" id="pfClientSeed">&mdash;</div></div>
+          <div class="pf-row"><label>Nonce</label><div class="pf-val mono" id="pfNonce">&mdash;</div></div>
+          <h3>Rotate your client seed</h3>
+          <div class="pf-rotate">
+            <input type="text" id="pfRotateInput" placeholder="New client seed (blank for random)" maxlength="64" />
+            <button class="btn-primary" onclick="pfRotate()">Rotate</button>
+          </div>
+        </div>
+        <div class="pf-panel" data-pf-panel="verify">
+          <h3>Verify a bet</h3>
+          <p class="muted">Paste a Game ID to see how the outcome was generated.</p>
+          <div class="pf-verify-input">
+            <input type="text" id="pfVerifyId" placeholder="Game ID" maxlength="64"/>
+            <button class="btn-primary" onclick="pfVerify()">Verify</button>
+          </div>
+          <div class="pf-verify-out" id="pfVerifyOut"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODALS ============ -->
+
+<!-- WALLET -->
+<div class="modal" id="walletModal">
+  <div class="modal-backdrop" onclick="closeWalletModal()"></div>
+  <div class="modal-card modal-wallet">
+    <button class="modal-close" onclick="closeWalletModal()"><svg class="ni"><use href="#i-x"/></svg></button>
+    <div class="wallet-tabs">
+      <button class="wallet-tab active" data-wtab="overview"><svg class="ni"><use href="#i-wallet"/></svg> Overview</button>
+      <button class="wallet-tab" data-wtab="deposit"><svg class="ni"><use href="#i-deposit"/></svg> Deposit</button>
+      <button class="wallet-tab" data-wtab="withdraw"><svg class="ni"><use href="#i-withdraw"/></svg> Withdraw</button>
+      <button class="wallet-tab" data-wtab="tip"><svg class="ni"><use href="#i-tip"/></svg> Tip</button>
+      <button class="wallet-tab" data-wtab="settings"><svg class="ni"><use href="#i-settings"/></svg> Settings</button>
+    </div>
+
+    <div class="wallet-panel active" data-wpanel="overview">
+      <div class="wallet-balance-big">
+        <img src="assets/icons/ltc.png" class="wallet-ltc" alt="LTC"/>
+        <div class="wbal-val" id="wbalVal">$0.00</div>
+        <div class="wbal-sub" id="wbalSub">0 pts</div>
+      </div>
+      <div class="wallet-action-grid">
+        <button class="wa-card" onclick="switchWalletTab('deposit')">
+          <div class="wa-icon" style="background:var(--accent)"><svg class="ni"><use href="#i-deposit"/></svg></div>
+          <div class="wa-text"><b>Deposit</b><span>Add LTC to your account</span></div>
+        </button>
+        <button class="wa-card" onclick="switchWalletTab('withdraw')">
+          <div class="wa-icon" style="background:var(--gold)"><svg class="ni"><use href="#i-withdraw"/></svg></div>
+          <div class="wa-text"><b>Withdraw</b><span>Send LTC to your wallet</span></div>
+        </button>
+        <button class="wa-card" onclick="switchWalletTab('tip')">
+          <div class="wa-icon" style="background:var(--blue)"><svg class="ni"><use href="#i-tip"/></svg></div>
+          <div class="wa-text"><b>Tip</b><span>Send points to a user</span></div>
+        </button>
+        <button class="wa-card" onclick="switchWalletTab('settings')">
+          <div class="wa-icon" style="background:var(--purple)"><svg class="ni"><use href="#i-settings"/></svg></div>
+          <div class="wa-text"><b>Settings</b><span>Currency &amp; display</span></div>
+        </button>
+      </div>
+      <div class="wallet-stats-grid">
+        <div class="ws-card"><span>Deposited</span><b id="wsDep">$0.00</b></div>
+        <div class="ws-card"><span>Withdrawn</span><b id="wsWdr">$0.00</b></div>
+        <div class="ws-card"><span>Wagered</span><b id="wsWag">$0.00</b></div>
+        <div class="ws-card profit"><span>Net Profit</span><b id="wsProfit">$0.00</b></div>
+      </div>
+    </div>
+
+    <div class="wallet-panel" data-wpanel="deposit">
+      <h3 class="wpanel-h3">Deposit Litecoin (LTC)</h3>
+      <p class="muted">Send LTC to this address. Your balance will update automatically once confirmed.</p>
+      <div class="deposit-status" id="depositStatus">
+        <span class="deposit-status-dot"></span>
+        <span class="deposit-status-text">Initialising&hellip;</span>
+      </div>
+      <div class="deposit-qr-wrap" id="depositQrWrap">
+        <div class="deposit-qr-placeholder" id="depositQrPlaceholder">
+          <svg class="ni" style="width:36px;height:36px;color:var(--muted)"><use href="#i-spinner"/></svg>
+          <span>Loading QR&hellip;</span>
+        </div>
+        <canvas id="depositQrCanvas" width="200" height="200" style="display:none"></canvas>
+      </div>
+      <div class="deposit-addr-wrap">
+        <div class="deposit-addr mono" id="depositAddr">&mdash;</div>
+        <button class="deposit-copy-btn" onclick="copyDepositAddr()" title="Copy address">
+          <svg class="ni" style="width:14px;height:14px"><use href="#i-copy"/></svg>
+          <span>Copy</span>
+        </button>
+      </div>
+      <div class="deposit-info-grid">
+        <div><span>Network</span><b>Litecoin (LTC)</b></div>
+        <div><span>Minimum</span><b>0.001 LTC</b></div>
+        <div><span>Confirmations</span><b>2&ndash;6 blocks</b></div>
+        <div><span>Credited as</span><b>1 LTC = 100 pts</b></div>
+      </div>
+      <div class="deposit-divider"></div>
+      <h3 class="wpanel-h3">Recent Deposits</h3>
+      <div class="deposit-recent" id="depositRecent">
+        <div class="muted" style="font-size:12px">No deposits yet. Make your first one above.</div>
+      </div>
+    </div>
+
+    <div class="wallet-panel" data-wpanel="withdraw">
+      <h3 class="wpanel-h3">Withdraw Litecoin</h3>
+      <p class="muted">Send your winnings to any LTC address. Network fee <b>0.001 LTC</b> (deducted from amount).</p>
+      <div class="wdr-field">
+        <label>LTC Address</label>
+        <input type="text" id="wdrAddr" placeholder="ltc1..." />
+      </div>
+      <div class="wdr-field">
+        <label>Amount (pts)</label>
+        <div class="wdr-amt-row">
+          <button class="wdr-half" onclick="wdrHalve()">1/2</button>
+          <input type="number" id="wdrAmt" class="wdr-input" value="100" min="1" oninput="wdrPreview()"/>
+          <button class="wdr-double" onclick="wdrDouble()">2x</button>
+          <button class="wdr-max" onclick="wdrMax()">Max</button>
+        </div>
+        <small class="muted">Available: <span id="wdrAvail">0</span> pts &middot; Min: <span id="wdrMin">1000</span> pts &middot; Max: <span id="wdrMax">100000</span> pts</small>
+      </div>
+      <div class="wdr-preview" id="wdrPreview" style="display:none">
+        <div><span>You send</span><b id="wdrSend">0 pts</b></div>
+        <div><span>Network fee</span><b>100 pts</b></div>
+        <div class="wdr-preview-total"><span>You receive</span><b id="wdrReceive">0 pts</b></div>
+      </div>
+      <div class="wdr-wager-banner" id="wdrWagerBanner" style="display:none"></div>
+      <div class="wdr-warn" id="wdrWarn" style="display:none"></div>
+      <button class="btn-primary big" id="wdrBtn" onclick="doWithdraw()">Withdraw</button>
+      <div class="withdraw-msg" id="withdrawMsg"></div>
+    </div>
+
+    <div class="wallet-panel" data-wpanel="tip">
+      <h3 class="wpanel-h3">Tip a User</h3>
+      <p class="muted">Send points to another player for free.</p>
+      <div class="wdr-field">
+        <label>Username or Discord User ID</label>
+        <input type="text" id="tipUserId" placeholder="e.g. fx_rexyyy or 1388859512517165087" />
+      </div>
+      <div class="wdr-field">
+        <label>Amount (pts)</label>
+        <input type="number" id="tipAmt" value="100" min="1"/>
+      </div>
+      <div class="wdr-wager-banner" id="tipWagerBanner" style="display:none"></div>
+      <button class="btn-primary big" id="tipBtn" onclick="doTip()">Send Tip</button>
+      <div class="withdraw-msg" id="tipMsg"></div>
+    </div>
+
+    <div class="wallet-panel" data-wpanel="settings">
+      <h3 class="wpanel-h3">Display Settings</h3>
+      <div class="setting-row">
+        <div><b>Hide zero balances</b><p class="muted">Hide wallets with no funds</p></div>
+        <label class="switch"><input type="checkbox" id="setHideZero"/><span class="slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div><b>Display in Fiat</b><p class="muted">Show balance in fiat instead of points</p></div>
+        <label class="switch"><input type="checkbox" id="setShowFiat"/><span class="slider"></span></label>
+      </div>
+      <h3 class="wpanel-h3" style="margin-top:18px">Fiat Currency</h3>
+      <div class="fiat-grid" id="fiatGrid">
+        <button class="fiat-card active" data-fiat="USD"><b>$</b><span>USD</span></button>
+        <button class="fiat-card" data-fiat="INR"><b>&#8377;</b><span>INR</span></button>
+        <button class="fiat-card" data-fiat="EUR"><b>&euro;</b><span>EUR</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VERIFY -->
+<div class="modal" id="verifyModal">
+  <div class="modal-backdrop" onclick="closeVerifyModal()"></div>
+  <div class="modal-card modal-verify">
+    <button class="modal-close" onclick="closeVerifyModal()"><svg class="ni"><use href="#i-x"/></svg></button>
+    <h3 style="margin-bottom:8px"><svg class="ni" style="width:18px;height:18px;color:var(--accent)"><use href="#i-shield"/></svg> Verify a Bet</h3>
+    <p class="muted" style="margin-bottom:10px">Paste a Game ID to cryptographically verify the result.</p>
+    <div class="verify-input">
+      <input type="text" id="verifyId" placeholder="Game ID"/>
+      <button class="btn-primary" onclick="verifyGame()">Verify</button>
+    </div>
+    <div class="verify-out" id="verifyOut"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="modal" id="settingsModal">
+  <div class="modal-backdrop" onclick="closeSettingsModal()"></div>
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeSettingsModal()"><svg class="ni"><use href="#i-x"/></svg></button>
+    <h3>Settings</h3>
+    <div class="setting-row"><div><b>Sound</b><p class="muted">Play sounds on bets</p></div><label class="switch"><input type="checkbox" id="optSound"/><span class="slider"></span></label></div>
+    <div class="setting-row"><div><b>Animations</b><p class="muted">Enable game animations</p></div><label class="switch"><input type="checkbox" id="optAnim"/><span class="slider"></span></label></div>
+    <div class="setting-row"><div><b>Instant bet</b><p class="muted">Skip bet confirmation</p></div><label class="switch"><input type="checkbox" id="optInstant"/><span class="slider"></span></label></div>
+    <div class="setting-row"><div><b>Game info</b><p class="muted">Show info tooltips</p></div><label class="switch"><input type="checkbox" id="optInfo"/><span class="slider"></span></label></div>
+  </div>
+</div>
+
+<div id="toastBox" class="toast-box"></div>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="js/app.js?v=21"></script>
+</body>
+</html>
