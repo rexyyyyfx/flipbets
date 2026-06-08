@@ -1668,7 +1668,7 @@ async function minesTap(idx) {
     const rand = getEl('minesRandomBtn'); if (rand) rand.disabled = true;
     minesUpdate();
     showMinesResult('-', res.bet || 0);
-    toast('Bomb! Lost ' + nFmt(res.bet) + ' pts', 'error');
+    toast('Bomb! Lost ' + nFmt(res.bet), 'error');
     minesGameId = null;
   }
   minesTapping = false;
@@ -1676,7 +1676,7 @@ async function minesTap(idx) {
 function showMinesResult(prefix, pts, cls) {
   const ov = document.createElement('div');
   ov.className = 'mines-result-toast' + (cls ? ' ' + cls : '');
-  ov.textContent = prefix + nFmt(pts) + ' pts';
+  ov.textContent = prefix + nFmt(pts);
   const canvas = document.querySelector('#page-mines .game-canvas') || document.body;
   canvas.appendChild(ov);
   setTimeout(() => ov.remove(), 1800);
@@ -1692,7 +1692,7 @@ async function minesCashout() {
   user.balance = res.balance; renderUI(); minesActive = false; minesRevealed = 0;
   const ov = getEl('minesCashoutOverlay');
   getEl('minesCashoutMult').textContent = (res.multiplier || 0).toFixed(2) + 'x';
-  getEl('minesCashoutPayout').textContent = '+' + nFmt(res.payout) + ' pts';
+  getEl('minesCashoutPayout').textContent = '+' + nFmt(res.payout);
   ov.classList.add('show');
   btn.innerHTML = '<svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span>';
   btn.className = 'gc-play';
@@ -1701,7 +1701,7 @@ async function minesCashout() {
   setTimeout(() => ov.classList.remove('show'), 3000);
   minesGameId = null;
   showMinesResult('+', res.payout, 'win');
-  toast('Cashed out +' + nFmt(res.payout) + ' pts', 'success');
+  toast('Cashed out +' + nFmt(res.payout), 'success');
 }
 
 // =================== BLACKJACK ===================
@@ -1816,9 +1816,9 @@ function updateBJ(state) {
     const isPush = state.result === 'push' || state.result === 'tie';
     const prefix = isWin ? '+' : (isPush ? '=' : '-');
     const label = isWin ? 'WIN' : (isPush ? 'PUSH' : 'LOST');
-    wrap.innerHTML = `<button class="gc-play ${isWin ? 'state-cashout' : ''}" onclick="bjReset()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>${(state.result||'done').toUpperCase()} \u2014 ${state.payout > 0 ? '+' : ''}${nFmt(state.payout||0)} pts \u2014 Deal Again</span></button>`;
+    wrap.innerHTML = `<button class="gc-play" onclick="bjReset()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span></button>`;
     bjActive = false; bjGameId = null;
-    showResult(label + ' ' + prefix + nFmt(state.payout || 0) + ' pts', isWin ? 'win' : (isPush ? 'push' : ''));
+    showResult(label + ' ' + prefix + nFmt(state.payout || 0), isWin ? 'win' : (isPush ? 'push' : ''));
     toast(isWin ? 'You won!' : isPush ? 'Push' : 'You lost', isWin ? 'success' : 'info');
     return;
   }
@@ -1979,7 +1979,7 @@ async function cfFlip() {
 
   setTimeout(() => {
     const rEl = getEl('cfResult');
-    rEl.innerHTML = '<div class="' + (won ? 'win' : 'lose') + '">' + result.toUpperCase() + ' \u2014 ' + (won ? 'Won ' + nFmt(res.payout) + ' pts!' : 'Lost ' + nFmt(bet) + ' pts') + '</div>';
+    rEl.innerHTML = '<div class="' + (won ? 'win' : 'lose') + '">' + result.toUpperCase() + ' \u2014 ' + (won ? 'Won ' + nFmt(res.payout) : 'Lost') + '</div>';
     btn.disabled = false; btn.innerHTML = '<svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Flip Coin</span>';
     cfActive = false;
     toast(won ? 'You won!' : 'You lost', won ? 'success' : 'error');
@@ -2060,7 +2060,7 @@ function hlShowCashout() {
   const ca = Math.floor(parseInt(getEl('hlBet')?.value || 0) * hlCurrentMult);
   getEl('hlActions').innerHTML =
     `<button class="gc-play" onclick="hlGuess('higher')" style="background:var(--accent)" ${higherDis}><span>Higher</span></button>` +
-    `<button class="gc-play state-cashout" onclick="hlCashout()"><span>Cashout ${nFmt(ca)}</span></button>` +
+    `<button class="gc-play state-cashout" onclick="hlCashout()"><span>Cashout</span></button>` +
     `<button class="gc-play" onclick="hlGuess('lower')" style="background:var(--red);color:#fff" ${lowerDis}><span>Lower</span></button>`;
 }
 async function hlGuess(choice) {
@@ -2081,8 +2081,9 @@ async function hlGuess(choice) {
     hlRenderStreak();
     if (res.gameOver) {
       user.balance = res.balance || user.balance; renderUI();
-      showResult('WIN +' + nFmt(res.payout || 0) + ' pts', 'win');
-      toast('Cashed out +' + nFmt(res.payout) + ' pts', 'success');
+      showResult('WIN +' + nFmt(res.payout || 0), 'win');
+  toast('Cashed out +' + nFmt(res.payout), 'success');
+
       hlActive = false; hlGameId = null;
       hlStreakCount = 0; hlCurrentMult = 1;
       setTimeout(() => {
@@ -2090,7 +2091,7 @@ async function hlGuess(choice) {
         if (prev) prev.innerHTML = '';
         if (next) { next.textContent = '?'; next.className = 'hl-card hl-card-hidden'; }
         getEl('hlStats').textContent = 'Pick higher or lower to start.';
-        getEl('hlActions').innerHTML = '<button class="gc-play" onclick="hlStart()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Play Again</span></button>';
+        getEl('hlActions').innerHTML = '<button class="gc-play" onclick="hlStart()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span></button>';
       }, 1800);
       return;
     }
@@ -2103,8 +2104,8 @@ async function hlGuess(choice) {
     if (res.balance !== undefined) { user.balance = res.balance; renderUI(); }
     hlActive = false; hlGameId = null;
     const lostAmt = res.bet || parseInt(getEl('hlBet')?.value || 0);
-    showResult('LOST -' + nFmt(lostAmt) + ' pts', '');
-    toast('Wrong! Lost ' + nFmt(lostAmt) + ' pts', 'error');
+    showResult('LOST -' + nFmt(lostAmt), '');
+    toast('Wrong! Lost ' + nFmt(lostAmt), 'error');
     if (next) next.classList.add('hl-flip-wrong');
     setTimeout(() => {
       hlStreakCount = 0; hlCurrentMult = 1;
@@ -2112,7 +2113,7 @@ async function hlGuess(choice) {
       if (prev) prev.innerHTML = '';
       if (next) { next.textContent = '?'; next.className = 'hl-card hl-card-hidden'; }
       getEl('hlStats').textContent = 'Wrong! Try again.';
-      getEl('hlActions').innerHTML = '<button class="gc-play" onclick="hlStart()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Try Again</span></button>';
+      getEl('hlActions').innerHTML = '<button class="gc-play" onclick="hlStart()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span></button>';
     }, 1500);
   }
 }
@@ -2121,12 +2122,12 @@ async function hlCashout() {
   const res = await api('/api/games/hilo/cashout', { method: 'POST', body: JSON.stringify({ gameId: hlGameId }) });
   if (!res) return;
   user.balance = res.balance; renderUI();
-  toast('Cashed out +' + nFmt(res.payout) + ' pts', 'success');
+  toast('Cashed out +' + nFmt(res.payout), 'success');
   hlActive = false; hlGameId = null;
-  getEl('hlStats').textContent = 'Cashed out: ' + nFmt(res.payout) + ' pts';
+  getEl('hlStats').textContent = 'Cashed out: ' + nFmt(res.payout);
   hlStreakCount = 0; hlCurrentMult = 1;
   hlRenderStreak();
-  getEl('hlActions').innerHTML = '<button class="gc-play" onclick="hlStart()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Play Again</span></button>';
+  getEl('hlActions').innerHTML = '<button class="gc-play" onclick="hlStart()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span></button>';
 }
 
 // =================== WHEEL ===================
@@ -2156,7 +2157,7 @@ async function whlSpin() {
     const won = mult > 0;
     getEl('whlResult').innerHTML = '<div class="' + (won ? 'win' : 'lose') + '">' + mult + 'x \u2014 ' + (won ? 'Won ' + nFmt(res.payout) : 'Lost') + '</div>';
     whlActive = false;
-    toast(won ? 'Wheel: +' + nFmt(res.payout) + ' pts!' : 'Wheel: 0x', won ? 'success' : 'error');
+    toast(won ? 'Wheel: +' + nFmt(res.payout) : 'Wheel: 0x', won ? 'success' : 'error');
   }, 4100);
 }
 
