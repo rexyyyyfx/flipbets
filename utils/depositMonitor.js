@@ -107,15 +107,13 @@ class DepositMonitor {
 
     await dmChannel.send({ embeds: [embed] }).catch(() => {});
 
-    const channel = client.channels.cache.get(config.publicBetsChannel);
-    if (channel) {
-      const pubEmbed = EmbedHelper.createDefault()
-        .setTitle(`${config.emojis.litecoin} Deposit`)
-        .setDescription(`${user.username} deposited **$${(amount * LTC_RATE).toFixed(2)}** worth of LTC!`)
-        .setColor(config.colors.success)
-        .setTimestamp();
-      channel.send({ embeds: [pubEmbed] }).catch(() => {});
-    }
+    const { sendPublic } = require('./broadcast');
+    const pubEmbed = EmbedHelper.createDefault()
+      .setTitle(`${config.emojis.litecoin} Deposit`)
+      .setDescription(`${user.username} deposited **$${(amount * LTC_RATE).toFixed(2)}** worth of LTC!`)
+      .setColor(config.colors.success)
+      .setTimestamp();
+    sendPublic(client, { embeds: [pubEmbed] });
   }
 }
 

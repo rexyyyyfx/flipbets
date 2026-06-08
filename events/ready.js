@@ -20,10 +20,16 @@ module.exports = {
     if (gamblingChannel) {
       Logger.success('Gambling channel found and ready');
     }
+    if (config.gamblingChannels && config.gamblingChannels.length > 1) {
+      Logger.info(`Bot accepts game commands in ${config.gamblingChannels.length} channels: ${config.gamblingChannels.join(', ')}`);
+    }
 
     const publicBetsChannel = client.channels.cache.get(config.publicBetsChannel);
     if (publicBetsChannel) {
       Logger.success('Public bets channel found and ready');
+    }
+    if (config.publicBetsChannels && config.publicBetsChannels.length > 1) {
+      Logger.info(`Public bet announcements will be broadcast to ${config.publicBetsChannels.length} channels`);
     }
 
     crashLoop.start(client);

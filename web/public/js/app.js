@@ -46,6 +46,22 @@ function loadSettings() {
   } catch (e) { return { sound: true, anim: true, instant: false, info: true }; }
 }
 function saveSettings() { localStorage.setItem('flipbets_settings', JSON.stringify(settings)); }
+function saveAndApply() {
+  const s = settings;
+  s.sound = getEl('optSound')?.checked !== false;
+  s.anim = getEl('optAnim')?.checked !== false;
+  s.instant = getEl('optInstant')?.checked === true;
+  s.info = getEl('optInfo')?.checked !== false;
+  saveSettings();
+  toast('Settings saved', 'success');
+  closeSettingsModal();
+}
+function toggleSetting(key) {
+  const e = getEl('opt' + key.charAt(0).toUpperCase() + key.slice(1));
+  if (!e) return;
+  settings[key] = e.checked;
+  saveSettings();
+}
 
 function toast(msg, type) {
   const box = getEl('toastBox');
@@ -232,6 +248,10 @@ function applyFiat() {
   if (getEl('setShowFiat')) getEl('setShowFiat').checked = walletShowFiat;
 }
 function closeSettingsModal() { getEl('settingsModal').classList.remove('show'); }
+function openSettingsModal() {
+  applySettings();
+  getEl('settingsModal').classList.add('show');
+}
 
 /* =========== NOTIFICATION PANEL =========== */
 let notifOpen = false;
@@ -468,6 +488,7 @@ function switchAdminTab(name) {
   $$('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.atab === name));
   $$('.admin-panel').forEach(p => p.style.display = p.dataset.apanel === name ? 'block' : 'none');
   if (name === 'races') loadAdminRaces();
+  if (name === 'withdrawals') adminWithdrawTab();
 }
 async function adminLoadGlobal() {
   const s = await api('/api/admin/global-stats');
@@ -761,6 +782,57 @@ function adminResetDatabase() {
   api('/api/admin/utility/reset-database', { method: 'POST' }).then(r => { if (r) { toast('Database wiped', 'success'); location.reload(); } });
 }
 
+/* ---------- ADMIN WITHDRAWALS ---------- */
+async function adminLoadWithdrawals(status) {
+  const data = await api('/api/admin/withdrawals' + (status ? '?status=' + status : ''));
+  const list = getEl('adWithdrawList');
+  if (!list) return;
+  if (!data || !data.length) { list.innerHTML = '<div class="muted">No withdrawals found</div>'; return; }
+  list.innerHTML = data.map(tx => {
+    const amt = Math.abs(tx.amount || 0);
+    const d = new Date(tx.createdAt);
+    const statusClass = tx.status === 'completed' ? 'badge-success' : tx.status === 'failed' ? 'badge-banned' : 'badge-pending';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:12px">' +
+      '<span class="mono" style="flex-shrink:0;color:var(--muted);font-size:10px">#' + esc(tx.transactionId) + '</span>' +
+      '<span class="muted" style="flex:1">' + esc(tx.username) + '</span>' +
+      '<b style="color:var(--gold)">' + nFmt(amt) + ' pts</b>' +
+      '<span class="' + statusClass + '">' + tx.status + '</span>' +
+      '<span class="muted" style="font-size:10px">' + d.toLocaleDateString() + '</span>' +
+      (tx.status === 'pending' ? '<button class="gc-play" style="padding:4px 12px;font-size:11px;width:auto;margin:0" onclick="adminApproveWdr(\'' + esc(tx.transactionId) + '\')">Approve</button><button class="gc-secondary" style="padding:4px 12px;font-size:11px;width:auto" onclick="adminRejectWdr(\'' + esc(tx.transactionId) + '\')">Reject</button>' : '') +
+      '<span class="muted" style="font-size:10px;max-width:100px;overflow:hidden;text-overflow:ellipsis">' + esc(tx.cryptoAddress || '') + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+async function adminApproveWdr(id) {
+  const r = await api('/api/admin/withdrawals/' + encodeURIComponent(id) + '/approve', { method: 'POST' });
+  if (r) { toast('Withdrawal approved', 'success'); adminLoadWithdrawals('pending'); adminLoadHouseBal(); }
+}
+
+async function adminRejectWdr(id) {
+  if (!confirm('Reject withdraw ' + id + '? User will be refunded automatically.')) return;
+  const r = await api('/api/admin/withdrawals/' + encodeURIComponent(id) + '/reject', { method: 'POST' });
+  if (r) { toast('Withdrawal rejected, refunded ' + nFmt(r.refunded) + ' pts', 'success'); adminLoadWithdrawals('pending'); adminLoadHouseBal(); }
+}
+
+async function adminLoadHouseBal() {
+  const r = await api('/api/admin/house-balance');
+  if (!r) return;
+  const set = (id, v) => { const e = getEl(id); if (e) e.textContent = v; };
+  set('adHouseBal', nFmt(r.netHouse || 0) + ' pts');
+  set('adPendingCount', r.pendingCount || '—');
+  set('adTotalDep', nFmt(r.totalDeposited || 0) + ' pts');
+  set('adTotalWagered', nFmt(r.totalWagered || 0) + ' pts');
+  // Also update global panel
+  set('gsDeposits', '$' + (r.totalDeposited * 0.01).toFixed(2));
+  set('gsWithdrawals', '$' + (r.totalWithdrawn * 0.01).toFixed(2));
+}
+
+async function adminWithdrawTab() {
+  adminLoadHouseBal();
+  adminLoadWithdrawals('pending');
+}
+
 // Public config (maintenance, enabled games)
 async function loadPublicConfig() {
   const cfg = await api('/api/public/config');
@@ -833,14 +905,20 @@ async function loadDepositAddress() {
 
   const canvas = getEl('depositQrCanvas');
   const placeholder = getEl('depositQrPlaceholder');
-  if (canvas && typeof QRCode !== 'undefined') {
+  if (canvas) {
     try {
-      canvas.width = 220; canvas.height = 220;
-      QRCode.toCanvas(canvas, addr, { width: 220, margin: 2, color: { dark: '#0f1923', light: '#fff' } }, err => {
-        if (err) console.error(err);
-        else { canvas.style.display = 'block'; if (placeholder) placeholder.style.display = 'none'; }
-      });
-    } catch (e) { console.error(e); }
+      canvas.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+      if (typeof QRCode !== 'undefined') {
+        canvas.width = 220; canvas.height = 220;
+        QRCode.toCanvas(canvas, addr, { width: 220, margin: 2, color: { dark: '#0f1923', light: '#fff' } }, err => {
+          if (err) { canvas.style.display = 'none'; if (placeholder) { placeholder.style.display = 'flex'; placeholder.innerHTML = '<span style="color:var(--red)">QR error</span>'; } }
+        });
+      } else {
+        canvas.style.display = 'none';
+        if (placeholder) { placeholder.style.display = 'flex'; placeholder.innerHTML = '<span class="muted">QR not available</span>'; }
+      }
+    } catch (e) { console.error('QR error:', e); }
   }
   loadDepositRecent();
 }
@@ -1247,12 +1325,10 @@ function toggleFloatingStats() {
   const shown = box.style.display !== 'none';
   if (!shown) {
     box.style.display = 'block';
-    loadFloatingStats();
-    if (fsPollTimer) clearInterval(fsPollTimer);
+  }
+  loadFloatingStats();
+  if (!fsPollTimer) {
     fsPollTimer = setInterval(loadFloatingStats, 4000);
-  } else {
-    box.style.display = 'none';
-    if (fsPollTimer) { clearInterval(fsPollTimer); fsPollTimer = null; }
   }
 }
 function closeFloatingStats() { const box = getEl('floatingStats'); if (box) box.style.display = 'none'; if (fsPollTimer) { clearInterval(fsPollTimer); fsPollTimer = null; } }
@@ -1319,7 +1395,7 @@ function saveSettings() {
 }
 async function loadFloatingStats() {
   const fsBox = getEl('floatingStats');
-  if (!fsBox || fsBox.style.display === 'none') return;
+  if (!fsBox) return;
   if (!user) {
     const set = (id, v) => { const e = getEl(id); if (e) e.textContent = v; };
     set('fsBets', '0'); set('fsWins', '0'); set('fsLosses', '0'); set('fsPl', '$0.00');

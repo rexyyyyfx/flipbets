@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Flipbets - Crypto Casino</title>
-    <link rel="stylesheet" href="css/style.css?v=21" />
+    <link rel="stylesheet" href="css/style.css?v=23" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -446,6 +446,7 @@
       <button class="admin-tab" data-atab="games" onclick="switchAdminTab('games')"><svg class="ni"><use href="#i-dice"/></svg> Games</button>
       <button class="admin-tab" data-atab="rewards" onclick="switchAdminTab('rewards')"><svg class="ni"><use href="#i-gift"/></svg> Rewards</button>
       <button class="admin-tab" data-atab="races" onclick="switchAdminTab('races')"><svg class="ni"><use href="#i-trophy"/></svg> Races</button>
+      <button class="admin-tab" data-atab="withdrawals" onclick="switchAdminTab('withdrawals')"><svg class="ni"><use href="#i-withdraw"/></svg> W/DR</button>
       <button class="admin-tab" data-atab="utility" onclick="switchAdminTab('utility')"><svg class="ni"><use href="#i-settings"/></svg> Utility</button>
     </div>
 
@@ -615,6 +616,27 @@
         <div id="raceHistoryList" class="muted">Loading...</div>
       </div>
     </div>
+
+      <div class="admin-panel" data-apanel="withdrawals" style="display:none">
+      <div class="admin-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+        <div class="admin-card"><div class="ac-label" style="font-size:10px">House Balance</div><div class="ac-val" id="adHouseBal" style="color:var(--gold);font-size:14px">—</div></div>
+        <div class="admin-card"><div class="ac-label" style="font-size:10px">Pending W/DR</div><div class="ac-val" id="adPendingCount" style="font-size:14px">—</div></div>
+        <div class="admin-card"><div class="ac-label" style="font-size:10px">Total Deposited</div><div class="ac-val" id="adTotalDep" style="font-size:14px">—</div></div>
+        <div class="admin-card"><div class="ac-label" style="font-size:10px">Total Wagered</div><div class="ac-val" id="adTotalWagered" style="font-size:14px">—</div></div>
+      </div>
+      <div class="muted" style="font-size:11px;margin-bottom:10px;padding:8px 12px;background:var(--bg3);border-radius:8px">
+        <b>House Balance</b> = Total Deposited − Total Withdrawn − All User Balances. If you want to deposit into the house (add points without a real LTC deposit), use <b>Admin &gt; Users &gt; find a user → Add Balance</b>. The house balance is just a calculated metric — there's no separate "house wallet" to deposit into directly.
+      </div>
+      <div class="admin-card">
+        <h4>Withdrawal Requests</h4>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="btn-primary" onclick="adminLoadWithdrawals('pending')" style="padding:6px 14px;font-size:12px">Pending</button>
+          <button class="gc-secondary" onclick="adminLoadWithdrawals('completed')" style="padding:6px 14px;font-size:12px;width:auto">Completed</button>
+          <button class="gc-secondary" onclick="adminLoadWithdrawals('failed')" style="padding:6px 14px;font-size:12px;width:auto">Failed</button>
+        </div>
+        <div id="adWithdrawList">Loading...</div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -735,7 +757,7 @@
           </div>
         </div>
         <div class="game-bottom-row">
-          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Settings" onclick="openSettingsModal()"><svg class="ni"><use href="#i-settings"/></svg></button>
           <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
           <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
         </div>
@@ -781,7 +803,7 @@
           </div>
         </div>
         <div class="game-bottom-row">
-          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Settings" onclick="openSettingsModal()"><svg class="ni"><use href="#i-settings"/></svg></button>
           <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
           <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
         </div>
@@ -846,7 +868,7 @@
           <button class="gc-play" id="limBetBtn" onclick="limPlay()"><span>Bet</span></button>
         </div>
         <div class="game-bottom-row">
-          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Settings" onclick="openSettingsModal()"><svg class="ni"><use href="#i-settings"/></svg></button>
           <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
           <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
         </div>
@@ -901,7 +923,7 @@
           </div>
         </div>
         <div class="game-bottom-row">
-          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Settings" onclick="openSettingsModal()"><svg class="ni"><use href="#i-settings"/></svg></button>
           <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
           <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
         </div>
@@ -955,7 +977,7 @@
           </div>
         </div>
         <div class="game-bottom-row">
-          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Settings" onclick="openSettingsModal()"><svg class="ni"><use href="#i-settings"/></svg></button>
           <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
           <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
         </div>
@@ -1003,7 +1025,7 @@
           <button class="gc-play" onclick="whlSpin()"><span>Spin</span></button>
         </div>
         <div class="game-bottom-row">
-          <button class="gbr-btn" title="Settings" onclick="openSettings()"><svg class="ni"><use href="#i-settings"/></svg></button>
+          <button class="gbr-btn" title="Settings" onclick="openSettingsModal()"><svg class="ni"><use href="#i-settings"/></svg></button>
           <button class="gbr-btn" title="Stats" onclick="toggleFloatingStats()"><svg class="ni"><use href="#i-stats"/></svg></button>
           <button class="gbr-btn" title="History" onclick="goPage('history')"><svg class="ni"><use href="#i-clock"/></svg></button>
         </div>
@@ -1033,7 +1055,7 @@
 <!-- BOTTOM BAR (game pages only) -->
 <div class="game-bottombar" id="gameBottombar" style="position:fixed">
   <div class="gb-left">
-    <button class="gb-btn" id="settingsBtn" title="Settings"><svg class="ni"><use href="#i-settings"/></svg></button>
+    <button class="gb-btn" id="settingsBtn" title="Settings" onclick="openSettingsModal()"><svg class="ni"><use href="#i-settings"/></svg></button>
     <button class="gb-btn" onclick="toggleFloatingStats()" title="Stats"><svg class="ni"><use href="#i-stats"/></svg></button>
   </div>
   <div class="gb-center">
@@ -1283,20 +1305,20 @@
 </div>
 
 <!-- SETTINGS -->
-<div class="modal" id="settingsModal">
-  <div class="modal-backdrop" onclick="closeSettingsModal()"></div>
-  <div class="modal-card">
-    <button class="modal-close" onclick="closeSettingsModal()"><svg class="ni"><use href="#i-x"/></svg></button>
-    <h3>Settings</h3>
-    <div class="setting-row"><div><b>Sound</b><p class="muted">Play sounds on bets</p></div><label class="switch"><input type="checkbox" id="optSound"/><span class="slider"></span></label></div>
-    <div class="setting-row"><div><b>Animations</b><p class="muted">Enable game animations</p></div><label class="switch"><input type="checkbox" id="optAnim"/><span class="slider"></span></label></div>
-    <div class="setting-row"><div><b>Instant bet</b><p class="muted">Skip bet confirmation</p></div><label class="switch"><input type="checkbox" id="optInstant"/><span class="slider"></span></label></div>
-    <div class="setting-row"><div><b>Game info</b><p class="muted">Show info tooltips</p></div><label class="switch"><input type="checkbox" id="optInfo"/><span class="slider"></span></label></div>
-  </div>
-</div>
+    <div class="modal" id="settingsModal">
+      <div class="modal-backdrop" onclick="closeSettingsModal()"></div>
+      <div class="modal-card">
+        <button class="modal-close" onclick="closeSettingsModal()"><svg class="ni"><use href="#i-x"/></svg></button>
+        <h3>Settings</h3>
+        <div class="setting-row"><div><b>Sound</b><p class="muted">Play sounds on bets</p></div><label class="switch"><input type="checkbox" id="optSound" onchange="toggleSetting('sound')"/><span class="slider"></span></label></div>
+        <div class="setting-row"><div><b>Animations</b><p class="muted">Enable game animations</p></div><label class="switch"><input type="checkbox" id="optAnim" onchange="toggleSetting('anim')"/><span class="slider"></span></label></div>
+        <div class="setting-row"><div><b>Instant bet</b><p class="muted">Skip bet confirmation</p></div><label class="switch"><input type="checkbox" id="optInstant" onchange="toggleSetting('instant')"/><span class="slider"></span></label></div>
+        <div class="setting-row"><div><b>Game info</b><p class="muted">Show info tooltips</p></div><label class="switch"><input type="checkbox" id="optInfo" onchange="toggleSetting('info')"/><span class="slider"></span></label></div>
+      </div>
+    </div>
 
 <div id="toastBox" class="toast-box"></div>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <script src="js/app.js?v=21"></script>
+    <script src="js/app.js?v=22"></script>
 </body>
 </html>

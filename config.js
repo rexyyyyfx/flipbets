@@ -7,11 +7,9 @@ module.exports = {
   ownerId: process.env.OWNER_ID,
   ownerIds: [process.env.OWNER_ID, '1456255350205579378', '1388859512517165087'].filter(Boolean),
   publicBetsChannel: process.env.PUBLIC_BETS_CHANNEL,
-  gamblingChannel: process.env.GAMBLING_CHANNEL,
-  gamblingChannels: [
-    process.env.GAMBLING_CHANNEL,
-    '1512665864208388126'
-  ].filter(Boolean),
+  publicBetsChannels: (process.env.PUBLIC_BETS_CHANNEL || '').split(',').map(s => s.trim()).filter(Boolean),
+  gamblingChannel: (process.env.GAMBLING_CHANNEL || '').split(',')[0]?.trim() || process.env.GAMBLING_CHANNEL,
+  gamblingChannels: (process.env.GAMBLING_CHANNEL || '').split(',').map(s => s.trim()).filter(Boolean),
   websiteUrl: 'https://flipbet.site/',
   apirone: {
     accountId: process.env.APIRONE_ACCOUNT_ID,

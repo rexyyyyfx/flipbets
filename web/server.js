@@ -1575,6 +1575,69 @@ app.post('/api/promo/redeem', isAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+/* ---------- ADMIN WITHDRAWAL MANAGEMENT ---------- */
+app.get('/api/admin/withdrawals', isAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const q = { type: 'withdraw' };
+    if (status) q.status = status;
+    const tx = await Transaction.find(q).sort({ createdAt: -1 }).limit(100).lean();
+    res.json(tx);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/withdrawals/:id/approve', isAdmin, async (req, res) => {
+  try {
+    const tx = await Transaction.findOne({ transactionId: req.params.id, type: 'withdraw', status: 'pending' });
+    if (!tx) return res.status(404).json({ error: 'Pending withdrawal not found' });
+    tx.status = 'completed';
+    await tx.save();
+    Logger.info(`Admin approved withdrawal ${tx.transactionId} (${tx.amount} pts to ${tx.cryptoAddress})`);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/withdrawals/:id/reject', isAdmin, async (req, res) => {
+  try {
+    const tx = await Transaction.findOne({ transactionId: req.params.id, type: 'withdraw', status: 'pending' });
+    if (!tx) return res.status(404).json({ error: 'Pending withdrawal not found' });
+    tx.status = 'failed';
+    const amt = Math.abs(tx.amount || 0);
+    const user = await User.findOne({ userId: tx.userId });
+    if (user) {
+      user.balance = roundPts((user.balance || 0) + amt);
+      user.totalWithdrawn = roundPts(Math.max(0, (user.totalWithdrawn || 0) - amt));
+      await user.save();
+    }
+    await tx.save();
+    Logger.info(`Admin rejected withdrawal ${tx.transactionId}, refunded ${amt} pts`);
+    res.json({ ok: true, refunded: amt });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/house-balance', isAdmin, async (req, res) => {
+  try {
+    const [depResult, wdrResult, pending] = await Promise.all([
+      User.aggregate([{ $group: { _id: null, total: { $sum: '$totalDeposited' } } }]),
+      User.aggregate([{ $group: { _id: null, total: { $sum: '$totalWithdrawn' } } }]),
+      Transaction.countDocuments({ type: 'withdraw', status: 'pending' })
+    ]);
+    const totalDeposited = depResult[0]?.total || 0;
+    const totalWithdrawn = wdrResult[0]?.total || 0;
+    const totalBalance = (await User.aggregate([{ $group: { _id: null, total: { $sum: '$balance' } } }]))[0]?.total || 0;
+    const totalWagered = (await User.aggregate([{ $group: { _id: null, total: { $sum: '$totalWagered' } } }]))[0]?.total || 0;
+    const netHouse = totalDeposited - totalWithdrawn - totalBalance;
+    res.json({
+      totalDeposited: roundPts(totalDeposited),
+      totalWithdrawn: roundPts(totalWithdrawn),
+      totalBalance: roundPts(totalBalance),
+      totalWagered: roundPts(totalWagered),
+      netHouse: roundPts(netHouse),
+      pendingCount: pending
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 /* ---------- ADMIN PANEL ENDPOINTS ---------- */
 app.get('/api/admin/config', isAdmin, async (req, res) => {
   try {

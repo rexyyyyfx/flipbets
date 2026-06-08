@@ -5,6 +5,7 @@ const EmbedHelper = require('../../utils/embedBuilder');
 const GameImages = require('../../utils/gameImages');
 const { parseBet } = require('../../utils/betParser');
 const config = require('../../config');
+const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
 
 const cardNames = { 1: 'A', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10', 11: 'J', 12: 'Q', 13: 'K' };

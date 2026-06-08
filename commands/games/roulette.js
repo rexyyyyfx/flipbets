@@ -4,6 +4,7 @@ const EmbedHelper = require('../../utils/embedBuilder');
 const GameImages = require('../../utils/gameImages');
 const { betAgainRow } = require('../../utils/gameComponents');
 const config = require('../../config');
+const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
 const { parseBet } = require('../../utils/betParser');
 
