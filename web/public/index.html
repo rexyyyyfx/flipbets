@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Flipbets - Crypto Casino</title>
-    <link rel="stylesheet" href="css/style.css?v=23" />
+    <link rel="stylesheet" href="css/style.css?v=24" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -78,7 +78,6 @@
   <nav class="sidebar-nav">
     <div class="nav-section">
       <a class="nav-item" data-page="home"><svg class="ni"><use href="#i-home"/></svg><span>Home</span></a>
-      <a class="nav-item" data-page="casino"><svg class="ni"><use href="#i-dice"/></svg><span>Casino</span></a>
     </div>
     <div class="nav-divider"></div>
     <div class="nav-section">
@@ -121,9 +120,6 @@
     <button class="hamburger" id="hamburger" aria-label="Menu" onclick="document.querySelector('.sidebar').classList.toggle('collapsed')">
       <svg class="ni"><use href="#i-menu"/></svg>
     </button>
-    <div class="top-tabs">
-      <button class="top-tab active" onclick="goPage('casino')"><span>Casino</span></button>
-    </div>
   </div>
   <div class="topbar-center">
     <a class="brand-logo" data-page="home" title="Flipbets">
@@ -218,12 +214,6 @@
       <div class="game-card-info"><b>Wheel</b><span>Spin for up to 10x</span></div>
     </a>
   </div>
-</section>
-
-<!-- CASINO -->
-<section class="page" id="page-casino">
-  <div class="section-head"><h2>All Games</h2></div>
-  <div class="game-grid" id="casinoGrid"></div>
 </section>
 
 <!-- LEADERBOARD -->
@@ -714,10 +704,6 @@
 <!-- MINES -->
 <section class="page" id="page-mines">
   <div class="game-shell">
-    <div class="game-tabs">
-      <button class="game-tab active"><span>Manual</span></button>
-
-    </div>
     <div class="game-layout">
       <div class="game-side">
         <div class="game-control">
@@ -781,10 +767,6 @@
 <!-- BLACKJACK -->
 <section class="page" id="page-blackjack">
   <div class="game-shell">
-    <div class="game-tabs">
-      <button class="game-tab active"><span>Manual</span></button>
-
-    </div>
     <div class="game-layout">
       <div class="game-side">
         <div class="game-control">
@@ -833,10 +815,6 @@
 <!-- LIMBO -->
 <section class="page" id="page-limbo">
   <div class="game-shell">
-    <div class="game-tabs">
-      <button class="game-tab active"><span>Manual</span></button>
-
-    </div>
     <div class="game-layout">
       <div class="game-side">
         <div class="game-control">
@@ -889,10 +867,6 @@
 <!-- COINFLIP -->
 <section class="page" id="page-coinflip">
   <div class="game-shell">
-    <div class="game-tabs">
-      <button class="game-tab active"><span>Manual</span></button>
-
-    </div>
     <div class="game-layout">
       <div class="game-side">
         <div class="game-control">
@@ -947,10 +921,6 @@
 <!-- HILO -->
 <section class="page" id="page-hilo">
   <div class="game-shell">
-    <div class="game-tabs">
-      <button class="game-tab active"><span>Manual</span></button>
-
-    </div>
     <div class="game-layout">
       <div class="game-side">
         <div class="game-control">
@@ -1005,10 +975,6 @@
 <!-- WHEEL -->
 <section class="page" id="page-wheel">
   <div class="game-shell">
-    <div class="game-tabs">
-      <button class="game-tab active"><span>Manual</span></button>
-
-    </div>
     <div class="game-layout">
       <div class="game-side">
         <div class="game-control">

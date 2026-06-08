@@ -288,9 +288,6 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .card.hidden { background: linear-gradient(135deg, #1a3050, #0a1424); border: 2px solid #2c4a72; }
 .card.hidden::after { content: '?'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 36px; font-weight: 800; }
 
-.bj-actions { display: flex; flex-direction: column; gap: 6px; }
-.bj-actions .gc-play { padding: 10px; font-size: 13px; }
-
 /* LIMBO */
 .lim-stage {
   background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--radius-lg);
@@ -330,8 +327,6 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .hl-card-hidden { background: linear-gradient(135deg, var(--bg4), var(--bg3)); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; color: var(--text2); border: 2px solid var(--line); }
 .hl-arrow { color: var(--text2); }
 .hl-stats { color: var(--text2); font-size: 13px; text-align: center; }
-.hl-actions { display: flex; flex-direction: column; gap: 5px; }
-.hl-actions .gc-play { padding: 8px; font-size: 11px; }
 
 /* CRASH */
 .cr-stage { background: var(--bg2); border: 1px solid var(--line2); border-radius: var(--radius-lg); padding: 24px; min-height: 320px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
@@ -641,12 +636,6 @@ body.has-bottombar .support-fab { bottom: 64px; }
 /* === Pick (Coinflip) overrides === */
 .cf-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-/* === Settings button bar for hi-lo === */
-.hl-actions { display: flex; flex-direction: column; gap: 5px; }
-.hl-actions .gc-play { padding: 10px; font-size: 12px; }
-.bj-actions { display: flex; flex-direction: column; gap: 5px; }
-.bj-actions .gc-play { padding: 10px; font-size: 12px; }
-
 /* =================== NEW: Brand logo image =================== */
 .brand-logo-img { height: 36px; display: block; filter: drop-shadow(0 0 6px rgba(59,130,246,.15)); }
 .brand-logo-fallback { font-size: 18px; font-weight: 900; letter-spacing: -.02em; background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -897,13 +886,6 @@ body.has-bottombar .support-fab { bottom: 64px; }
 .hr-verify { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--bg2); border: 1px solid var(--line2); border-radius: 6px; color: var(--text2); cursor: pointer; transition: var(--transition); }
 .hr-verify:hover { color: var(--accent); border-color: var(--accent); }
 
-/* GAME BODY VARIANTS - keep games on their own page */
-.game-body-mines { display: flex; flex-direction: column; align-items: center; gap: 20px; flex: 1; }
-.game-body-bj { display: flex; flex-direction: column; align-items: center; gap: 16px; flex: 1; padding: 16px; }
-.bj-zone-dealer, .bj-zone-player { display: flex; gap: 8px; min-height: 110px; align-items: center; }
-.game-body-limbo { display: flex; flex-direction: column; align-items: center; gap: 20px; flex: 1; }
-.game-body-cf { display: flex; flex-direction: column; align-items: center; gap: 18px; flex: 1; justify-content: center; }
-.game-body-hl { display: flex; flex-direction: column; align-items: center; gap: 16px; flex: 1; padding: 16px; }
 
 /* STAKE-LIKE GAME LAYOUT */
 .game-shell { max-width: 1500px; margin: 0 auto; padding: 12px; height: calc(100vh - 60px); display: flex; flex-direction: column; }
@@ -929,6 +911,10 @@ body.has-bottombar .support-fab { bottom: 64px; }
   background: #142028;
   border: 1px solid rgba(255,255,255,.06);
   border-radius: 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: space-around;
 }
 .game-tabs { display: flex; gap: 3px; background: #0c1419; border-radius: 20px; padding: 3px; width: 100%; }
 .game-tab { flex: 1; padding: 8px 0; background: transparent; border: 0; color: var(--muted); font-weight: 700; font-size: 12px; border-radius: 18px; cursor: pointer; transition: background .15s, color .15s; text-align: center; }
@@ -954,11 +940,12 @@ body.has-bottombar .support-fab { bottom: 64px; }
   border: 1px solid rgba(255,255,255,.08);
   color: var(--text2);
   border-radius: 8px;
-  padding: 0 10px;
+  padding: 0 14px;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
-  min-width: 36px;
+  min-width: 42px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -975,6 +962,13 @@ body.has-bottombar .support-fab { bottom: 64px; }
   color: var(--text); padding: 9px 12px;
   font-size: 13px; font-weight: 600;
   width: 100%; cursor: pointer; font-family: inherit;
+}
+.ctrl-select input {
+  background: transparent; border: 0;
+  color: var(--text); padding: 9px 12px;
+  font-size: 14px; font-weight: 700;
+  width: 100%; font-family: inherit;
+  font-variant-numeric: tabular-nums;
 }
 .gc-play {
   width: 100%; padding: 12px; font-size: 13px; font-weight: 800;
@@ -1180,8 +1174,7 @@ body.has-bottombar .support-fab { bottom: 64px; }
 }
 .bj-action-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px !important; font-size: 12px !important; }
 .bj-act-icon { width: 16px; height: 16px; opacity: .9; }
-.bj-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.bj-actions .gc-play { margin-top: 0; }
+.bj-actions { display: flex; flex-direction: column; gap: 6px; }
 
 .cf-coin-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .cf-coin { width: 140px; height: 140px; transform-style: preserve-3d; }
@@ -1205,7 +1198,7 @@ body.has-bottombar .support-fab { bottom: 64px; }
 .hl-card { transition: transform .35s ease, box-shadow .35s ease; }
 .hl-flip-in { animation: hlFlip .4s ease both; }
 @keyframes hlFlip { from { transform: rotateY(90deg); opacity:0 } to { transform: rotateY(0); opacity:1 } }
-.hl-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.hl-actions { display: flex; flex-direction: column; gap: 6px; }
 
 /* =================== MOBILE RESPONSIVE =================== */
 @media (max-width: 768px) {
