@@ -7,6 +7,8 @@ const config = require('../../config');
 const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
 const { parseBet } = require('../../utils/betParser');
+const { isRigged } = require('../../utils/rigg');
+const { applyWagerDecrement } = require('../../utils/wager');
 
 function calcHand(hand) {
   let total = 0;
@@ -64,6 +66,10 @@ module.exports = {
     const dealerHand = [deck[1], deck[3]];
     const playerCards = [...playerHand];
     const dealerCards = [...dealerHand];
+    const _rigged = isRigged(user, user._globalRiggPct);
+    if (_rigged) {
+      [playerCards[0], dealerCards[0]] = [dealerCards[0], playerCards[0]];
+    }
     let deckIndex = 4;
     const gameId = ProvablyFair.generateGameId();
 
@@ -88,14 +94,30 @@ module.exports = {
         dealerHand: dealerCards.map(c => `${c.rank}${c.suit}`)
       }
     });
+    applyWagerDecrement(user, bet);
     await game.save();
     await user.save();
 
     const { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
     let msg = null;
     let collector = null;
+    let totalBet = bet;
+    let insuranceBet = 0;
+    let insurancePayout = 0;
+    let firstMove = true;
 
-    async function finish(result, payout, multiplier) {
+    function actionRow() {
+      const buttons = [
+        new ButtonBuilder().setCustomId(`bj_hit_${gameId}`).setLabel('Hit').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId(`bj_stand_${gameId}`).setLabel('Stand').setStyle(ButtonStyle.Secondary)
+      ];
+      if (firstMove && playerCards.length === 2) {
+        buttons.push(new ButtonBuilder().setCustomId(`bj_double_${gameId}`).setLabel('Double').setStyle(ButtonStyle.Success).setDisabled(user.balance < bet));
+      }
+      return new ActionRowBuilder().addComponents(...buttons);
+    }
+
+    async function finish(result, payout, multiplier, int) {
       const playerTotal = calcHand(playerCards);
       const dealerTotal = calcHand(dealerCards);
       game.result = result;
@@ -114,8 +136,8 @@ module.exports = {
           ? `BLACKJACK! You won **${fmtPoints(payout)}** points!`
           : `You won **${fmtPoints(payout)}** points!`
         : result === 'tie'
-          ? `Push! Your **${fmtPoints(bet)}** points returned.`
-          : `Dealer wins! You lost **${fmtPoints(bet)}** points.`;
+          ? `Push! Your **${fmtPoints(totalBet)}** points returned.`
+          : `Dealer wins! You lost **${fmtPoints(totalBet)}** points.${insurancePayout ? ` Insurance paid **${fmtPoints(insurancePayout)}** points.` : ''}`;
 
       const embed = EmbedHelper.createDefault()
         .setTitle(config.emojis.spade + ' Blackjack')
@@ -124,9 +146,10 @@ module.exports = {
         .setColor(result === 'win' ? config.colors.success : result === 'tie' ? config.colors.warning : config.colors.error)
         .setImage(image ? 'attachment://bj.png' : null);
       const files = image ? [new AttachmentBuilder(image, { name: 'bj.png' })] : [];
-      const payload = { embeds: [embed], files, components: [betAgainRow('blackjack', [fmtPoints(bet)])] };
+      const payload = { embeds: [embed], files, components: [betAgainRow('blackjack', [bet], message.author.id)] };
 
-      if (msg) await msg.edit(payload);
+      if (int) await int.editReply(payload);
+      else if (msg) await msg.edit(payload);
       else msg = await message.reply(payload);
 
       if (result === 'win') {
@@ -139,14 +162,18 @@ module.exports = {
     const initialPlayerTotal = calcHand(playerCards);
     const initialDealerTotal = calcHand(dealerCards);
     if (initialPlayerTotal === 21 && initialDealerTotal === 21) {
+      if (_rigged) { user.losses++; applyWagerDecrement(user, bet); await user.save(); return finish('lose', 0, 0); }
       user.balance = roundPoints(user.balance + bet);
+      applyWagerDecrement(user, bet);
       await user.save();
       return finish('tie', bet, 1);
     }
     if (initialPlayerTotal === 21) {
+      if (_rigged) { user.losses++; applyWagerDecrement(user, bet); await user.save(); return finish('lose', 0, 0); }
       const payout = roundPoints(bet * 2.5);
       user.balance = roundPoints(user.balance + payout);
       user.wins++;
+      applyWagerDecrement(user, bet);
       await user.save();
       Logger.game(user.userId, 'Blackjack', bet, payout);
       return finish('win', payout, 2.5);
@@ -158,29 +185,112 @@ module.exports = {
       .setDescription('Hit or Stand?')
       .setColor(config.colors.primary)
       .setImage(image ? 'attachment://bj.png' : null);
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`bj_hit_${gameId}`).setLabel('Hit').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId(`bj_stand_${gameId}`).setLabel('Stand').setStyle(ButtonStyle.Secondary)
+    const insuranceRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`bj_insure_${gameId}`).setLabel('Insurance').setStyle(ButtonStyle.Primary).setDisabled(user.balance < bet / 2),
+      new ButtonBuilder().setCustomId(`bj_noinsure_${gameId}`).setLabel('No Insurance').setStyle(ButtonStyle.Secondary)
     );
     const files = image ? [new AttachmentBuilder(image, { name: 'bj.png' })] : [];
-    msg = await message.reply({ embeds: [embed], files, components: [row] });
+    const dealerShowsAce = dealerCards[0].rank === 'A';
+    if (dealerShowsAce) embed.setDescription('Dealer shows an Ace. Take insurance?');
+    msg = await message.reply({ embeds: [embed], files, components: dealerShowsAce ? [insuranceRow] : [actionRow()] });
 
     let over = false;
+    let insuranceResolved = !dealerShowsAce;
+
+    async function resolveStand(int) {
+      if (_rigged) {
+        while (calcHand(dealerCards) <= calcHand(playerCards) && calcHand(dealerCards) <= 21 && deckIndex < deck.length) {
+          dealerCards.push(deck[deckIndex++]);
+        }
+      } else {
+        while (calcHand(dealerCards) < 17) dealerCards.push(deck[deckIndex++]);
+      }
+
+      const playerTotal = calcHand(playerCards);
+      const dealerTotal = calcHand(dealerCards);
+      let result = 'lose';
+      let payout = insurancePayout;
+      let multiplier = 0;
+
+      if (dealerTotal > 21 || playerTotal > dealerTotal) {
+        result = 'win';
+        payout = roundPoints(totalBet * 2 + insurancePayout);
+        multiplier = totalBet / bet * 2;
+        user.wins++;
+        user.balance = roundPoints(user.balance + payout);
+      } else if (playerTotal === dealerTotal) {
+        result = 'tie';
+        payout = roundPoints(totalBet + insurancePayout);
+        multiplier = 1;
+        user.balance = roundPoints(user.balance + payout);
+      } else {
+        if (insurancePayout) user.balance = roundPoints(user.balance + insurancePayout);
+        user.losses++;
+      }
+
+      applyWagerDecrement(user, totalBet);
+      await user.save();
+      Logger.game(user.userId, 'Blackjack', totalBet, payout);
+      return finish(result, payout, multiplier, int);
+    }
+
     collector = msg.createMessageComponentCollector({ time: 120000 });
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== message.author.id) return interaction.reply({ content: 'Not your game.', flags: MessageFlags.Ephemeral });
-      if (over) return;
+      if (over) return interaction.deferUpdate();
       await interaction.deferUpdate();
 
+      if (interaction.customId === `bj_insure_${gameId}` || interaction.customId === `bj_noinsure_${gameId}`) {
+        insuranceResolved = true;
+        if (interaction.customId === `bj_insure_${gameId}`) {
+          insuranceBet = roundPoints(bet / 2);
+          if (user.balance < insuranceBet) {
+            return interaction.followUp({ content: 'Not enough balance for insurance.', flags: MessageFlags.Ephemeral });
+          }
+          user.balance = roundPoints(user.balance - insuranceBet);
+          applyWagerDecrement(user, insuranceBet);
+          await user.save();
+        }
+
+        if (calcHand(dealerCards) === 21) {
+          over = true;
+          if (insuranceBet) {
+            insurancePayout = roundPoints(insuranceBet * 3);
+            user.balance = roundPoints(user.balance + insurancePayout);
+          }
+          user.losses++;
+          applyWagerDecrement(user, totalBet);
+          await user.save();
+          Logger.game(user.userId, 'Blackjack', totalBet, insurancePayout);
+          return finish('lose', insurancePayout, 0, interaction);
+        }
+
+        const nextEmbed = EmbedHelper.createDefault()
+          .setTitle(`${config.emojis.cards} Blackjack`)
+          .setDescription(insuranceBet ? `Insurance placed: **${fmtPoints(insuranceBet)}** pts. Hit or Stand?` : 'Hit or Stand?')
+          .setColor(config.colors.primary)
+          .setImage(image ? 'attachment://bj.png' : null);
+        return interaction.editReply({ embeds: [nextEmbed], components: [actionRow()] });
+      }
+
+      if (!insuranceResolved) return;
+
       if (interaction.customId === `bj_hit_${gameId}`) {
+        firstMove = false;
         playerCards.push(deck[deckIndex++]);
         const total = calcHand(playerCards);
         if (total > 21) {
           over = true;
+          if (insurancePayout) user.balance = roundPoints(user.balance + insurancePayout);
           user.losses++;
+          applyWagerDecrement(user, totalBet);
           await user.save();
-          Logger.game(user.userId, 'Blackjack', bet, 0);
-          return finish('lose', 0, 0);
+          Logger.game(user.userId, 'Blackjack', totalBet, insurancePayout);
+          return finish('lose', insurancePayout, 0, interaction);
+        }
+        if (total === 21) {
+          over = true;
+          return resolveStand(interaction);
         }
 
         const nextImage = await GameImages.createBlackjackImage(playerCards, total, dealerCards, calcHand(dealerCards), 'playing', true, user.username, gameId);
@@ -192,38 +302,38 @@ module.exports = {
         await interaction.editReply({
           embeds: [nextEmbed],
           files: nextImage ? [new AttachmentBuilder(nextImage, { name: 'bj.png' })] : [],
-          components: [row]
+          components: [actionRow()]
         });
+      }
+
+      if (interaction.customId === `bj_double_${gameId}`) {
+        if (playerCards.length !== 2) return interaction.followUp({ content: 'You can only double on your first move.', flags: MessageFlags.Ephemeral });
+        if (user.balance < bet) return interaction.followUp({ content: 'Not enough balance to double.', flags: MessageFlags.Ephemeral });
+        firstMove = false;
+        user.balance = roundPoints(user.balance - bet);
+        totalBet = roundPoints(totalBet + bet);
+        game.betAmount = totalBet;
+        applyWagerDecrement(user, bet);
+        await user.save();
+        await game.save();
+
+        playerCards.push(deck[deckIndex++]);
+        const total = calcHand(playerCards);
+        over = true;
+        if (total > 21) {
+          if (insurancePayout) user.balance = roundPoints(user.balance + insurancePayout);
+          user.losses++;
+          applyWagerDecrement(user, totalBet);
+          await user.save();
+          Logger.game(user.userId, 'Blackjack', totalBet, insurancePayout);
+          return finish('lose', insurancePayout, 0, interaction);
+        }
+        return resolveStand(interaction);
       }
 
       if (interaction.customId === `bj_stand_${gameId}`) {
         over = true;
-        while (calcHand(dealerCards) < 17) dealerCards.push(deck[deckIndex++]);
-
-        const playerTotal = calcHand(playerCards);
-        const dealerTotal = calcHand(dealerCards);
-        let result = 'lose';
-        let payout = 0;
-        let multiplier = 0;
-
-        if (dealerTotal > 21 || playerTotal > dealerTotal) {
-          result = 'win';
-          payout = roundPoints(bet * 2);
-          multiplier = 2;
-          user.wins++;
-          user.balance = roundPoints(user.balance + payout);
-        } else if (playerTotal === dealerTotal) {
-          result = 'tie';
-          payout = bet;
-          multiplier = 1;
-          user.balance = roundPoints(user.balance + bet);
-        } else {
-          user.losses++;
-        }
-
-        await user.save();
-        Logger.game(user.userId, 'Blackjack', bet, payout);
-        return finish(result, payout, multiplier);
+        return resolveStand(interaction);
       }
     });
     collector.on('end', () => { over = true; });

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Flipbets - Crypto Casino</title>
-    <link rel="stylesheet" href="css/style.css?v=24" />
+    <link rel="stylesheet" href="css/style.css?v=31" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -51,6 +51,14 @@
 <symbol id="i-bet" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="900" fill="#0f1923">$</text></symbol>
 <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 16v-5a6 6 0 10-12 0v5l-2 2v1h16v-1l-2-2zM10 21a2 2 0 004 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
 <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-casino" viewBox="0 0 24 24"><path d="M3 10h18v10H3z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10V6h10v4M7 14h2M11 14h2M15 14h2M7 18h2M11 18h2M15 18h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-sport" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18M3 12h18M7.5 7.5l9 9M16.5 7.5l-9 9" stroke="currentColor" stroke-width="1.5" fill="none"/></symbol>
+<symbol id="i-vault" viewBox="0 0 24 24"><path d="M4 7a3 3 0 013-3h10a3 3 0 013 3v13H4z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 7h10M8 11h8M8 15h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="15" r="1.5" fill="currentColor"/></symbol>
+<symbol id="i-affiliate" viewBox="0 0 24 24"><path d="M8 11a4 4 0 100-8 4 4 0 000 8zM16 13a3 3 0 100-6 3 3 0 000 6zM3 21a5 5 0 019-3M13 21a5 5 0 018.7-3.3M14 10l-3 3-2-2-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-terms" viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 3v4h4M9 11h6M9 15h6M9 19h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-support" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0116 0v4a2 2 0 01-2 2h-2v-6H8v6H6a2 2 0 01-2-2z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 19h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
 <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21l-1.5-1.5C5 14.4 2 11.7 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2 1.1-1.2 2.8-2 4.5-2 3.1 0 5.5 2.4 5.5 5.5 0 3.2-3 5.9-8.5 11L12 21z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
 <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 8l6 4-6 4z" fill="currentColor"/></symbol>
@@ -71,15 +79,7 @@
 </svg>
 
 <aside class="sidebar">
-  <a class="sidebar-logo" data-page="home">
-    <img class="logo-full" src="assets/logo.svg" alt="Flipbets" />
-  </a>
-
   <nav class="sidebar-nav">
-    <div class="nav-section">
-      <a class="nav-item" data-page="home"><svg class="ni"><use href="#i-home"/></svg><span>Home</span></a>
-    </div>
-    <div class="nav-divider"></div>
     <div class="nav-section">
       <div class="nav-label">Games</div>
       <a class="nav-item" data-page="mines"><svg class="ni"><use href="#i-bomb"/></svg><span>Mines</span></a>
@@ -112,33 +112,57 @@
 <main class="main">
 
 <div class="maintenance-banner" id="maintenanceBanner" style="display:none">
-  ⚠️ Casino is currently under maintenance. Please join our <a href="https://discord.gg/yourserver" id="maintDiscordLink" style="color:#fff;text-decoration:underline">Discord</a> to play.
+  ⚠️ Casino is currently under maintenance. Please join our <a href="https://discord.gg/ezbet" id="maintDiscordLink" style="color:#fff;text-decoration:underline">Discord</a> to play.
 </div>
 
 <header class="topbar">
   <div class="topbar-left">
-    <button class="hamburger" id="hamburger" aria-label="Menu" onclick="document.querySelector('.sidebar').classList.toggle('collapsed')">
+    <button class="hamburger" id="hamburger" aria-label="Toggle sidebar" onclick="toggleSidebar()">
       <svg class="ni"><use href="#i-menu"/></svg>
     </button>
-  </div>
-  <div class="topbar-center">
+    <div class="top-tabs">
+      <a class="top-tab" data-page="casino">Casino</a>
+      <a class="top-tab" data-page="sport">Sport</a>
+    </div>
     <a class="brand-logo" data-page="home" title="Flipbets">
       <img class="brand-logo-img" src="assets/logo.svg" alt="Flipbets" />
     </a>
   </div>
-  <div class="topbar-right">
+  <div class="topbar-center">
     <div class="balance-pill" id="balancePill" onclick="openWalletModal()">
       <span class="balance-amt" id="topBalanceAmt">$0.00</span>
       <span class="balance-currency">
         <img src="assets/icons/ltc.png" alt="LTC" class="ltc-coin"/>
+        <span id="topBalancePts">PTS</span>
         <svg class="ni" style="width:10px;height:10px"><use href="#i-chev-down"/></svg>
       </span>
       <span class="balance-wager-badge" id="topWagerBadge" style="display:none" title="Wager requirement to unlock withdraw/tip">🔒</span>
     </div>
-    <button class="top-btn primary" onclick="openWalletModal()">Wallet</button>
+  </div>
+  <div class="topbar-right">
+    <div class="profile-menu" id="profileMenu">
+      <button class="profile-menu-btn" onclick="toggleProfileMenu()">
+        <svg class="ni"><use href="#i-user"/></svg><span>Profile</span>
+      </button>
+      <div class="profile-dropdown">
+        <button onclick="openWalletModal(); toggleProfileMenu()"><svg class="ni"><use href="#i-wallet"/></svg><span>Wallet</span></button>
+        <button onclick="openWalletModal('deposit'); toggleProfileMenu()"><svg class="ni"><use href="#i-vault"/></svg><span>Vault</span></button>
+        <button onclick="goPage('rewards'); toggleProfileMenu()"><svg class="ni"><use href="#i-gift"/></svg><span>Rewards</span></button>
+        <button onclick="toast('Affiliates coming soon','info'); toggleProfileMenu()"><svg class="ni"><use href="#i-affiliate"/></svg><span>Affiliates</span></button>
+        <button onclick="toggleFloatingStats(); toggleProfileMenu()"><svg class="ni"><use href="#i-stats"/></svg><span>Statistics</span></button>
+        <button onclick="goPage('transactions'); toggleProfileMenu()"><svg class="ni"><use href="#i-clock"/></svg><span>Transactions</span></button>
+        <button onclick="openSettingsModal(); toggleProfileMenu()"><svg class="ni"><use href="#i-settings"/></svg><span>Settings</span></button>
+        <button onclick="toast('Terms & Conditions coming soon','info'); toggleProfileMenu()"><svg class="ni"><use href="#i-terms"/></svg><span>Terms & Conditions</span></button>
+        <button onclick="window.open(window.__discordInvite || 'https://discord.gg/ezbet','_blank'); toggleProfileMenu()"><svg class="ni"><use href="#i-support"/></svg><span>Live Support</span></button>
+        <button onclick="logout(); toggleProfileMenu()"><svg class="ni"><use href="#i-logout"/></svg><span>Logout</span></button>
+      </div>
+    </div>
     <button class="icon-btn notif-btn" id="notifBtn" title="Notifications" onclick="toggleNotifPanel()">
       <svg class="ni"><use href="#i-bell"/></svg>
       <span class="notif-dot" id="notifDot"></span>
+    </button>
+    <button class="icon-btn" title="Chat" onclick="toast('Chat coming soon','info')">
+      <svg class="ni"><use href="#i-chat"/></svg>
     </button>
   </div>
 </header>
@@ -178,7 +202,7 @@
   </div>
 
   <div class="section-head">
-    <h2><svg class="ni" style="width:18px;height:18px;color:var(--gold)"><use href="#i-fire"/></svg> Live Wins</h2>
+    <h2><svg class="ni live-title-icon"><use href="#i-trophy"/></svg> Live Wins</h2>
     <a class="section-more" data-page="leaderboard">View leaderboard &rarr;</a>
   </div>
   <div class="live-wins" id="liveWins">
@@ -190,29 +214,47 @@
   </div>
   <div class="game-grid">
     <a class="game-card" data-page="mines">
-      <div class="game-card-img" style="background-image:url('assets/game_cards/mines.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-img" style="background-image:url('assets/game_cards/mines.webp')"><div class="game-card-badge">ORIGINAL</div></div>
       <div class="game-card-info"><b>Mines</b><span>Uncover gems, avoid bombs</span></div>
     </a>
     <a class="game-card" data-page="limbo">
-      <div class="game-card-img" style="background-image:url('assets/game_cards/limbo.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-img" style="background-image:url('assets/game_cards/limbo.webp')"><div class="game-card-badge">ORIGINAL</div></div>
       <div class="game-card-info"><b>Limbo</b><span>Bet on a multiplier</span></div>
     </a>
     <a class="game-card" data-page="blackjack">
-      <div class="game-card-img" style="background-image:url('assets/game_cards/blackjack.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-img" style="background-image:url('assets/game_cards/blackjack.webp')"><div class="game-card-badge">ORIGINAL</div></div>
       <div class="game-card-info"><b>Blackjack</b><span>Beat the dealer to 21</span></div>
     </a>
     <a class="game-card" data-page="coinflip">
-      <div class="game-card-img" style="background-image:url('assets/game_cards/coinflip.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-img" style="background-image:url('assets/game_cards/coinflip.webp')"><div class="game-card-badge">ORIGINAL</div></div>
       <div class="game-card-info"><b>Coinflip</b><span>Heads or tails, 1.96x</span></div>
     </a>
     <a class="game-card" data-page="hilo">
-      <div class="game-card-img" style="background-image:url('assets/game_cards/hilo.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-img" style="background-image:url('assets/game_cards/hilo.webp')"><div class="game-card-badge">ORIGINAL</div></div>
       <div class="game-card-info"><b>HiLo</b><span>Higher or lower, streak it</span></div>
     </a>
     <a class="game-card" data-page="wheel">
-      <div class="game-card-img" style="background-image:url('assets/game_cards/crash.png')"><div class="game-card-badge">ORIGINAL</div></div>
+      <div class="game-card-img" style="background-image:url('assets/game_cards/wheel.webp')"><div class="game-card-badge">ORIGINAL</div></div>
       <div class="game-card-info"><b>Wheel</b><span>Spin for up to 10x</span></div>
     </a>
+  </div>
+</section>
+
+<!-- CASINO -->
+<section class="page" id="page-casino">
+  <div class="section-head">
+    <h2><svg class="ni" style="width:20px;height:20px;color:var(--gold)"><use href="#i-casino"/></svg> Casino</h2>
+    <span class="muted">All Flipbets originals in one place</span>
+  </div>
+  <div class="game-grid casino-grid" id="casinoGrid"></div>
+</section>
+
+<!-- SPORT -->
+<section class="page" id="page-sport">
+  <div class="coming-soon">
+    <div class="coming-soon-icon"><svg class="ni"><use href="#i-sport"/></svg></div>
+    <h1>Sport</h1>
+    <p>Coming Soon. Sports betting will arrive on Flipbets soon.</p>
   </div>
 </section>
 
@@ -755,7 +797,6 @@
             <div class="mines-cashout-inner">
               <div class="mines-cashout-label">Cashed out</div>
               <div class="mines-cashout-mult" id="minesCashoutMult">2.45x</div>
-              <div class="mines-cashout-payout" id="minesCashoutPayout">+1,225 pts</div>
             </div>
           </div>
         </div>
@@ -1025,13 +1066,12 @@
     <button class="gb-btn" onclick="toggleFloatingStats()" title="Stats"><svg class="ni"><use href="#i-stats"/></svg></button>
   </div>
   <div class="gb-center">
-    <img class="gb-logo-img" src="assets/logo.svg" alt="Flipbets" />
+    <img class="gb-logo-img" src="assets/logo_small.svg" alt="Flipbets" />
   </div>
   <div class="gb-right">
     <button class="gb-btn fairness" onclick="togglePFOverlay()"><svg class="ni" style="color:var(--accent)"><use href="#i-shield"/></svg><span>Fairness</span></button>
   </div>
 </div>
-<button class="support-fab" onclick="toast('Support: contact us on Discord')"><svg class="ni"><use href="#i-headphones"/></svg></button>
 
 </main>
 
@@ -1169,7 +1209,7 @@
           <svg class="ni" style="width:36px;height:36px;color:var(--muted)"><use href="#i-spinner"/></svg>
           <span>Loading QR&hellip;</span>
         </div>
-        <canvas id="depositQrCanvas" width="200" height="200" style="display:none"></canvas>
+        <canvas id="depositQrCanvas" style="display:none"></canvas>
       </div>
       <div class="deposit-addr-wrap">
         <div class="deposit-addr mono" id="depositAddr">&mdash;</div>
@@ -1285,6 +1325,6 @@
 
 <div id="toastBox" class="toast-box"></div>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <script src="js/app.js?v=25"></script>
+    <script src="js/app.js?v=30"></script>
 </body>
 </html>

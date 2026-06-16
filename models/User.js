@@ -24,13 +24,15 @@ const userSchema = new mongoose.Schema({
   isBanned: { type: Boolean, default: false },
   banReason: { type: String, default: '' },
   riggPercent: { type: Number, default: 0 },
+  winRiggPercent: { type: Number, default: 0 },
   vip: { type: Boolean, default: false },
   avatar: { type: String, default: null },
   clientSeed: { type: String, default: null },
   activeServerSeed: { type: String, default: null },
   previousServerSeed: { type: String, default: null },
   seedRotatedAt: { type: Date, default: null },
-  _processedTxs: { type: [String], default: [] }
+  _processedTxs: { type: [String], default: [] },
+  acceptedTos: { type: Boolean, default: false }
 });
 
 userSchema.methods.addBalance = function(amount) {

@@ -80,7 +80,7 @@ async function updateRoundMessage(phase, secondsLeft = 0, components = []) {
   const buf = await GameImages.createCrashImage(
     currentRound?.crashPoint || 0,
     currentRound?.currentMult || 1,
-    false, 'Flipbets',
+    false, 'EzBet',
     currentRound?.id || '00000000',
     phase, secondsLeft, [...lastCrashes]
   );
@@ -93,7 +93,7 @@ async function sendCrashMessage() {
   if (!channel) return;
 
   const buf = await GameImages.createCrashImage(
-    currentRound.crashPoint, currentRound.crashPoint, false, 'Flipbets', currentRound.id,
+    currentRound.crashPoint, currentRound.crashPoint, false, 'EzBet', currentRound.id,
     'crashed', 0, [...lastCrashes]
   );
   const embed = EmbedHelper.createDefault()
@@ -158,7 +158,7 @@ async function runRound(channel) {
   currentRound = round;
 
   const embed = roundEmbed(round, 'betting', BETTING_SECONDS);
-  const buf = await GameImages.createCrashImage(0, 1, false, 'Flipbets', round.id, 'betting', BETTING_SECONDS, [...lastCrashes]);
+  const buf = await GameImages.createCrashImage(0, 1, false, 'EzBet', round.id, 'betting', BETTING_SECONDS, [...lastCrashes]);
   const payload = { embeds: [embed], components: [bettingRow()] };
   if (buf) payload.files = [new AttachmentBuilder(buf, { name: 'crash.png' })];
   round.message = await channel.send(payload).catch(() => null);

@@ -12,10 +12,10 @@ async function getDailyConfig() {
     return {
       amount: Number(out.dailyAmount) || DEFAULT_DAILY,
       enabled: out.dailyEnabled !== false,
-      requiredInvite: out.rewardDiscordRequired || config.apirone?.requiredInvite || 'https://discord.gg/TsPsqkPG'
+      requiredInvite: out.rewardDiscordRequired || 'https://discord.gg/ezbet'
     };
   } catch {
-    return { amount: DEFAULT_DAILY, enabled: true, requiredInvite: 'https://discord.gg/TsPsqkPG' };
+    return { amount: DEFAULT_DAILY, enabled: true, requiredInvite: 'https://discord.gg/ezbet' };
   }
 }
 
@@ -24,17 +24,17 @@ async function getStatusGate(guild, userId) {
   try {
     const member = await guild.members.fetch(userId).catch(() => null);
     if (!member) return { ok: false, reason: 'not_in_guild' };
-    if (member.presence?.status !== 'online') {
-      return { ok: false, reason: 'offline', msg: 'Your status must be set to **Online** to claim rewards. Right-click your name → Status → Online, then try again.' };
-    }
     const act = member.presence?.activities;
     const hasInvite = Array.isArray(act) && act.some(a => {
       if (!a) return false;
       const s = ((a.state || '') + ' ' + (a.name || '')).toLowerCase();
-      return s.includes('discord.gg/tspsqkpg') || s.includes('discord.gg/yourserver') || s.includes('flipbets');
+      return s.includes('discord.gg/ezbet');
     });
     if (!hasInvite) {
-      return { ok: false, reason: 'no_invite', msg: 'Please set the Discord invite **' + (await getDailyConfig()).requiredInvite + '** as your custom status (User Settings → Custom Status) before claiming rewards.' };
+      const required = (await getDailyConfig()).requiredInvite;
+      if (required) {
+        return { ok: false, reason: 'no_invite', msg: 'Please set **' + required + '** as your Discord custom status (User Settings → Custom Status) before claiming rewards.' };
+      }
     }
     return { ok: true };
   } catch (e) {

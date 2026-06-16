@@ -7,6 +7,8 @@ const { parseBet } = require('../../utils/betParser');
 const config = require('../../config');
 const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
+const { isRigged, isWinRigged } = require('../../utils/rigg');
+const { applyWagerDecrement } = require('../../utils/wager');
 
 const cardNames = { 1: 'A', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10', 11: 'J', 12: 'Q', 13: 'K' };
 const suits = ['♠', '♥', '♦', '♣'];
@@ -57,6 +59,7 @@ module.exports = {
     user.balance -= bet;
     user.gamesPlayed++;
     user.totalWagered = Math.round((user.totalWagered || 0) + bet * 100) / 100;
+    applyWagerDecrement(user, bet);
     await user.save();
 
     const gid = ProvablyFair.generateGameId();
@@ -77,7 +80,7 @@ module.exports = {
       return [new ActionRowBuilder().addComponents(btns)];
     }
 
-    async function endGame(won, payout, mult, nc, ns, guess) {
+    async function endGame(won, payout, mult, nc, ns, guess, int) {
       gameOver = true;
       game.result = won ? 'win' : 'lose';
       game.payout = payout;
@@ -96,6 +99,7 @@ module.exports = {
       const u = await require('../../models/User').findOne({ userId: user.userId });
       if (won) { u.balance += payout; u.wins++; }
       else u.losses++;
+      applyWagerDecrement(u, bet);
       await u.save();
       Logger.game(user.userId, 'Hilo', bet, wonPts);
 
@@ -109,9 +113,10 @@ module.exports = {
         )
         .setColor(won ? config.colors.success : config.colors.error)
         .setImage(buf ? 'attachment://hilo.png' : null)
-        .setFooter({ text: `Flipbets • Game ID: ${gid}` });
+        .setFooter({ text: `EzBet • Game ID: ${gid}` });
 
-      await msg.edit({ embeds: [e], files: buf ? [new AttachmentBuilder(buf, { name: 'hilo.png' })] : [], components: [] });
+      if (int) await int.editReply({ embeds: [e], files: buf ? [new AttachmentBuilder(buf, { name: 'hilo.png' })] : [], components: [] });
+      else await msg.edit({ embeds: [e], files: buf ? [new AttachmentBuilder(buf, { name: 'hilo.png' })] : [], components: [] });
       if (won) {
         const c = message.client.channels.cache.get(config.publicBetsChannel);
         if (c) c.send({ embeds: [EmbedHelper.createPublicBetEmbed(game)] });
@@ -130,7 +135,7 @@ module.exports = {
         )
         .setColor(config.colors.primary)
         .setImage(buf ? 'attachment://hilo.png' : null)
-        .setFooter({ text: 'Flipbets • Hi-Lo' });
+        .setFooter({ text: 'EzBet • Hi-Lo' });
 
       await msg.edit({ embeds: [e], files: buf ? [new AttachmentBuilder(buf, { name: 'hilo.png' })] : [], components: buildButtons(value) });
     }
@@ -147,18 +152,18 @@ module.exports = {
       )
       .setColor(config.colors.primary)
       .setImage(initBuf ? 'attachment://hilo.png' : null)
-      .setFooter({ text: 'Flipbets • Hi-Lo' });
+      .setFooter({ text: 'EzBet • Hi-Lo' });
 
     const msg = await message.reply({ embeds: [embed], files: initBuf ? [new AttachmentBuilder(initBuf, { name: 'hilo.png' })] : [], components: buildButtons(currentValue) });
 
     const collector = msg.createMessageComponentCollector({ time: 120000 });
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== message.author.id) return interaction.reply({ content: 'Not your game!', flags: MessageFlags.Ephemeral });
-      if (gameOver) return;
+      if (gameOver) return interaction.deferUpdate();
       await interaction.deferUpdate();
 
       const gd = await Game.findOne({ gameId: gid });
-      if (!gd || gd.result !== 'pending') { gameOver = true; return; }
+      if (!gd || gd.result !== 'pending') { gameOver = true; return interaction.editReply({ content: 'Game already finished.' }).catch(() => {}); }
 
       if (interaction.customId === `hilo_skip_${gid}`) {
         gameOver = true;
@@ -168,6 +173,7 @@ module.exports = {
         const u = await require('../../models/User').findOne({ userId: user.userId });
         u.balance += payout;
         u.wins++;
+        applyWagerDecrement(u, bet);
         await u.save();
         game.result = 'win';
         game.payout = payout;
@@ -181,16 +187,26 @@ module.exports = {
             { name: 'Game ID', value: `\`${gid}\``, inline: false }
           )
           .setColor(config.colors.success);
-        await msg.edit({ embeds: [e], components: [] });
+        await interaction.editReply({ embeds: [e], components: [] });
         return;
       }
 
       const guess = interaction.customId.includes('high') ? 'higher' : 'lower';
       const roundNum = gd.details.currentValue;
       const npf = new ProvablyFair(ss, cs, nn + 1);
-      const nc = npf.generateInt(1, 13);
+      let nc = npf.generateInt(1, 13);
       const ns = suits[npf.generateInt(0, 3)];
-      const correct = guess === 'higher' ? nc > currentValue : nc < currentValue;
+      let correct = guess === 'higher' ? nc > currentValue : nc < currentValue;
+      if (correct && isRigged(user, user._globalRiggPct)) {
+        if (guess === 'higher') { nc = currentValue > 1 ? currentValue - 1 : 13; }
+        else { nc = currentValue < 13 ? currentValue + 1 : 1; }
+        correct = false;
+      }
+      if (!correct && isWinRigged(user)) {
+        if (guess === 'higher') { nc = currentValue < 13 ? currentValue + 1 : currentValue - 1; }
+        else { nc = currentValue > 1 ? currentValue - 1 : currentValue + 1; }
+        correct = true;
+      }
 
       if (nc === currentValue) {
         gd.details.cards.push(`${cardNames[nc]}${ns}`);
@@ -203,23 +219,23 @@ module.exports = {
           .addFields({ name: 'Bet', value: `${fmt(bet)} pts`, inline: true })
           .setColor(config.colors.warning)
           .setImage(buf ? 'attachment://hilo.png' : null);
-        msg.edit({ embeds: [e], files: buf ? [new AttachmentBuilder(buf, { name: 'hilo.png' })] : [], components: [] });
-        await new Promise(r => setTimeout(r, 2000));
+        await interaction.editReply({ embeds: [e], files: buf ? [new AttachmentBuilder(buf, { name: 'hilo.png' })] : [], components: [] }).catch(() => {});
+        await new Promise(r => setTimeout(r, 500));
         return render(currentValue, currentSuit);
       }
 
       if (!correct) {
         collector.stop();
-        return endGame(false, 0, 0, nc, ns, guess);
+        return endGame(false, 0, 0, nc, ns, guess, interaction);
       }
 
       collector.stop();
       const mult = getPayoutMultiplier(currentValue, guess);
       const payout = Math.floor(bet * mult);
       if (!Number.isFinite(payout) || payout <= 0) {
-        return endGame(false, 0, 0, nc, ns, guess);
+        return endGame(false, 0, 0, nc, ns, guess, interaction);
       }
-      return endGame(true, payout, mult, nc, ns, guess);
+      return endGame(true, payout, mult, nc, ns, guess, interaction);
     });
 
     collector.on('end', () => { if (!gameOver) { gameOver = true; msg.edit({ components: [] }).catch(() => {}); } });

@@ -42,7 +42,7 @@ module.exports = {
         { name: 'Recent Games', value: recentText, inline: false }
       )
       .setColor(config.colors.primary)
-      .setFooter({ text: `Flipbets • Profile` });
+      .setFooter({ text: `EzBet • Profile` });
 
     message.reply({ embeds: [embed] });
   }

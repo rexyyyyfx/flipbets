@@ -7,6 +7,8 @@ const config = require('../../config');
 const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
 const { parseBet } = require('../../utils/betParser');
+const { isRigged, isWinRigged } = require('../../utils/rigg');
+const { applyWagerDecrement } = require('../../utils/wager');
 
 module.exports = {
   name: 'wheel',
@@ -29,11 +31,22 @@ module.exports = {
     const nonce = user.gamesPlayed + 1;
     const pf = new ProvablyFair(serverSeed, clientSeed, nonce);
     const segments = [
-      { mult: 0 }, { mult: 1.5 }, { mult: 0 }, { mult: 2 }, { mult: 0 }, { mult: 5 },
-      { mult: 0 }, { mult: 2 }, { mult: 0 }, { mult: 10 }, { mult: 0 }, { mult: 20 }
+      { mult: 0, weight: 73 }, { mult: 1.2, weight: 320 }, { mult: 0, weight: 73 }, { mult: 1.5, weight: 120 },
+      { mult: 0, weight: 73 }, { mult: 2, weight: 60 }, { mult: 0, weight: 73 }, { mult: 3, weight: 30 },
+      { mult: 0, weight: 73 }, { mult: 5, weight: 27 }, { mult: 0, weight: 73 }, { mult: 10, weight: 5 }
     ];
-    const segmentIdx = Math.floor(pf.generateFloat() * segments.length);
-    const segment = segments[segmentIdx];
+    const totalWeight = segments.reduce((sum, s) => sum + s.weight, 0);
+    let rollWeight = pf.generateFloat() * totalWeight;
+    let segmentIdx = 0;
+    for (let i = 0; i < segments.length; i++) {
+      rollWeight -= segments[i].weight;
+      if (rollWeight <= 0) { segmentIdx = i; break; }
+    }
+    let segment = segments[segmentIdx];
+    if (segment.mult > 0 && isRigged(user, user._globalRiggPct)) { segmentIdx = 0; segment = segments[0]; }
+    if (segment.mult === 0 && isWinRigged(user)) {
+      segmentIdx = 2; segment = segments[2];
+    }
     const won = segment.mult > 0;
     const payout = won ? Math.floor(bet * segment.mult) : 0;
 
@@ -44,12 +57,13 @@ module.exports = {
       gameId, userId: user.userId, username: user.username,
       gameType: 'Wheel', betAmount: bet, payout, multiplier: segment.mult,
       result: won ? 'win' : 'lose', serverSeed, clientSeed, nonce,
-      details: { segment: segmentIdx }
+      details: { segment: segmentIdx, weights: segments.map(s => s.weight), rtp: 0.959 }
     });
+    applyWagerDecrement(user, bet);
     await game.save(); await user.save();
     Logger.game(user.userId, 'Wheel', bet, payout);
 
-    const buffer = await GameImages.createWheelImage(segmentIdx, segment.mult, won, user.username, gameId);
+    const buffer = await GameImages.createWheelImage(segmentIdx, segment.mult, won, user.username, gameId, segments);
     const { AttachmentBuilder } = require('discord.js');
     const embed = EmbedHelper.createDefault()
       .setTitle(`${config.emojis.highroller} Wheel`)
@@ -63,12 +77,12 @@ module.exports = {
       .setColor(won ? config.colors.success : config.colors.error)
       .setThumbnail(message.author.displayAvatarURL())
       .setImage(buffer ? 'attachment://wheel.png' : null)
-      .setFooter({ text: `Flipbets • Game ID: ${gameId}` });
+      .setFooter({ text: `EzBet • Game ID: ${gameId}` });
 
     message.reply({
       embeds: [embed],
       files: buffer ? [new AttachmentBuilder(buffer, { name: 'wheel.png' })] : [],
-      components: [betAgainRow('wheel', [bet])]
+      components: [betAgainRow('wheel', [bet], message.author.id)]
     }).then(() => {
       const channel = message.client.channels.cache.get(config.publicBetsChannel);
       if (channel && won) channel.send({ embeds: [EmbedHelper.createPublicBetEmbed(game)] });

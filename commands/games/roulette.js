@@ -7,6 +7,8 @@ const config = require('../../config');
 const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
 const { parseBet } = require('../../utils/betParser');
+const { isRigged, isWinRigged } = require('../../utils/rigg');
+const { applyWagerDecrement } = require('../../utils/wager');
 
 module.exports = {
   name: 'roulette',
@@ -46,6 +48,36 @@ module.exports = {
     else if (bets[betType]) { won = bets[betType].c; mult = bets[betType].m; }
     else return message.reply(`${config.emojis.warning} Invalid bet type.`);
 
+    if (won && isRigged(user, user._globalRiggPct)) {
+      const pick = () => Math.floor(Math.random() * 37);
+      const isRed = (n) => redN.includes(n);
+      if (betType === 'red') { do { number = pick(); } while (isRed(number) || number === 0); }
+      else if (betType === 'black') { do { number = pick(); } while (!isRed(number) || number === 0); }
+      else if (betType === 'odd') { do { number = pick(); } while (number % 2 !== 0 || number === 0); }
+      else if (betType === 'even') { do { number = pick(); } while (number % 2 === 0); }
+      else if (betType === 'green') { do { number = pick(); } while (number !== 0); }
+      else if (betType === '1-18') { do { number = pick(); } while (number >= 1 && number <= 18); }
+      else if (betType === '19-36') { do { number = pick(); } while (number >= 19 && number <= 36); }
+      else { do { number = pick(); } while (number === numBet); }
+      color = number === 0 ? 'green' : isRed(number) ? 'red' : 'black';
+      won = false; mult = 0;
+    }
+    if (!won && isWinRigged(user)) {
+      const isRed = (n) => redN.includes(n);
+      if (betType === 'red') { do { number = Math.floor(Math.random() * 37); } while (!isRed(number) || number === 0); }
+      else if (betType === 'black') { do { number = Math.floor(Math.random() * 37); } while (isRed(number) || number === 0); }
+      else if (betType === 'odd') { do { number = Math.floor(Math.random() * 37); } while (number % 2 === 0 || number === 0); }
+      else if (betType === 'even') { do { number = Math.floor(Math.random() * 37); } while (number % 2 !== 0); }
+      else if (betType === 'green') { do { number = Math.floor(Math.random() * 37); } while (number !== 0); number = 0; }
+      else if (betType === '1-18') { do { number = Math.floor(Math.random() * 37); } while (number < 1 || number > 18); }
+      else if (betType === '19-36') { do { number = Math.floor(Math.random() * 37); } while (number < 19 || number > 36); }
+      else { number = parseInt(betType); }
+      color = number === 0 ? 'green' : isRed(number) ? 'red' : 'black';
+      won = true;
+      const winMult = bets[betType]?.m;
+      mult = winMult || (betType === 'green' ? 36 : 36);
+    }
+
     const payout = won ? Math.floor(bet * mult) : 0;
     user.balance -= bet; user.gamesPlayed++; user.totalWagered += bet;
     if (won) { user.balance += payout; user.wins++; } else user.losses++;
@@ -56,6 +88,7 @@ module.exports = {
       result: won ? 'win' : 'lose', serverSeed, clientSeed, nonce,
       details: { number, color, betType }
     });
+    applyWagerDecrement(user, bet);
     await game.save(); await user.save();
 
     const buffer = await GameImages.createRouletteImage(number, color, won, user.username, gameId);
@@ -71,12 +104,12 @@ module.exports = {
       .setColor(won ? config.colors.success : config.colors.error)
       .setThumbnail(message.author.displayAvatarURL())
       .setImage(buffer ? 'attachment://roulette.png' : null)
-      .setFooter({ text: `Flipbets • Game ID: ${gameId}` });
+      .setFooter({ text: `EzBet • Game ID: ${gameId}` });
 
     message.reply({
       embeds: [embed],
       files: buffer ? [new AttachmentBuilder(buffer, { name: 'roulette.png' })] : [],
-      components: [betAgainRow('roulette', [bet, betType])]
+      components: [betAgainRow('roulette', [bet, betType], message.author.id)]
     }).then(() => {
       const channel = message.client.channels.cache.get(config.publicBetsChannel);
       if (channel && won) channel.send({ embeds: [EmbedHelper.createPublicBetEmbed(game)] });

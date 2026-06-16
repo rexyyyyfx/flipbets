@@ -1,7 +1,10 @@
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const config = require('../config');
 const User = require('../models/User');
 const Settings = require('../models/Settings');
 const EmbedHelper = require('../utils/embedBuilder');
+const globalRiggCache = require('../utils/globalRiggCache');
+const { TOS_EMBEDS } = require('../utils/tos');
 
 const WEBSITE_CMDS = ['help', 'h', 'commands', 'cmds', 'menu', 'site', 'website', 'games', 'g', 'casino'];
 
@@ -44,12 +47,33 @@ module.exports = {
         username: message.author.username
       });
     }
+    const globalRiggPct = await globalRiggCache.get();
 
     if (user.isBanned && !command.admin) {
-      return message.reply(`${config.emojis.cross} You are banned from using Flipbets.`);
+      return message.reply(`${config.emojis.cross} You are banned from using EzBet.`);
+    }
+
+    if (commandName !== 'tos' && !command.admin && !user.acceptedTos) {
+      try {
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId('accept_tos').setLabel('Accept Terms').setStyle(ButtonStyle.Success)
+        );
+        const tosEmbeds = TOS_EMBEDS().map(e => EmbedHelper.createDefault()
+          .setTitle(`${config.emojis.verified} ${e.title}`)
+          .setDescription(e.description)
+          .setColor(config.colors.info)
+          .setFooter({ text: e.footer })
+          .setTimestamp()
+        );
+        await message.author.send({ embeds: tosEmbeds, components: [row] });
+        return message.reply(`${config.emojis.verified} Check your DMs to accept the Terms of Service first.`);
+      } catch {
+        return message.reply(`${config.emojis.warning} Could not send you a DM. Please enable DMs from server members to accept the Terms of Service.`);
+      }
     }
 
     try {
+      user._globalRiggPct = globalRiggPct;
       await command.execute(message, args, user);
       if (WEBSITE_CMDS.includes(commandName) || (command.aliases && command.aliases.some(a => WEBSITE_CMDS.includes(a)))) {
         // Website link added in command embeds via EmbedHelper.withWebsiteLink where applicable

@@ -45,7 +45,7 @@ module.exports = {
         { name: 'Total Bets', value: `${total}`, inline: true }
       )
       .setColor(config.colors.info)
-      .setFooter({ text: `Flipbets • Page ${page}/${totalPages}` })
+      .setFooter({ text: `EzBet • Page ${page}/${totalPages}` })
       .setTimestamp();
 
     await message.reply({ embeds: [embed] });

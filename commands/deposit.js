@@ -26,7 +26,10 @@ module.exports = {
       let address = user.depositAddresses[key];
 
       if (!address || String(address).startsWith('MOCK_')) {
-        const result = await ApironeAPI.generateAddress(currency);
+        const result = await ApironeAPI.generateAddress(currency, {
+          userId: message.author.id,
+          username: message.author.username
+        });
         address = result.address;
         if (!address || address.startsWith('MOCK_')) {
           throw new Error('Apirone returned an invalid address. Contact admin.');

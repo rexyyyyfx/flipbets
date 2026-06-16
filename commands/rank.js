@@ -6,7 +6,26 @@ const config = require('../config');
 let canvasModule = null;
 try { canvasModule = require('@napi-rs/canvas'); } catch {}
 
-const RANK_COLORS = ['#CD7F32', '#C0C0C0', '#FFD700', '#E5E4E2', '#00d4ff', '#50C878', '#E0115F', '#9b59b6', '#4fd1ff'];
+const COLORS = ['#b87932', '#c8d0d8', '#f5c542', '#e8edf5', '#45b7ff', '#40d98c', '#ff4d7d', '#9b7cff', '#f8fafc'];
+
+function fmt(value) {
+  return Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+
+function rr(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function rankColor(rank) {
+  const idx = Ranks.getAll().findIndex(r => r.name === rank?.name);
+  return COLORS[idx] || '#23e078';
+}
 
 module.exports = {
   name: 'rank',
@@ -14,75 +33,94 @@ module.exports = {
   async execute(message, args, user) {
     const totalWagered = user.totalWagered || 0;
     const { rank, next, progress } = Ranks.getRank(totalWagered);
-
+    const color = rankColor(rank);
     let buffer = null;
+
     if (canvasModule && rank) {
       const { createCanvas } = canvasModule;
-      const canvas = createCanvas(500, 300);
+      const canvas = createCanvas(760, 360);
       const ctx = canvas.getContext('2d');
 
-      const grad = ctx.createLinearGradient(0, 0, 500, 300);
-      grad.addColorStop(0, '#0d1520');
-      grad.addColorStop(1, '#1a2744');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 500, 300);
+      const bg = ctx.createLinearGradient(0, 0, 760, 360);
+      bg.addColorStop(0, '#070b10');
+      bg.addColorStop(1, '#111923');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, 760, 360);
 
-      const idx = Ranks.getAll().findIndex(r => r.name === rank.name);
-      const color = RANK_COLORS[idx] || '#FFD700';
+      ctx.strokeStyle = 'rgba(255,255,255,.05)';
+      for (let x = 0; x < 760; x += 38) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + 160, 360);
+        ctx.stroke();
+      }
+
+      rr(ctx, 34, 34, 692, 292, 20);
+      ctx.fillStyle = 'rgba(20,33,44,.92)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.10)';
+      ctx.stroke();
 
       ctx.fillStyle = color;
-      ctx.font = 'bold 32px Arial';
+      ctx.beginPath();
+      ctx.arc(114, 132, 54, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#071017';
+      ctx.font = 'italic bold 58px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(rank.name, 250, 70);
+      ctx.textBaseline = 'middle';
+      ctx.fillText('F', 114, 139);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 32px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(user.username || 'Player', 192, 92);
+      ctx.fillStyle = color;
+      ctx.font = 'bold 42px Arial';
+      ctx.fillText(rank.name, 192, 142);
+      ctx.fillStyle = 'rgba(255,255,255,.64)';
+      ctx.font = '16px Arial';
+      ctx.fillText(`${fmt(totalWagered)} pts wagered`, 192, 176);
+
+      const barX = 70, barY = 238, barW = 620, barH = 24;
+      rr(ctx, barX, barY, barW, barH, 12);
+      ctx.fillStyle = 'rgba(255,255,255,.08)';
+      ctx.fill();
+      const pct = Math.min(100, Math.max(0, progress || 0));
+      rr(ctx, barX, barY, Math.max(8, barW * pct / 100), barH, 12);
+      const fill = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+      fill.addColorStop(0, color);
+      fill.addColorStop(1, '#23e078');
+      ctx.fillStyle = fill;
+      ctx.fill();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${pct.toFixed(1)}%`, barX + barW / 2, barY + 17);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(255,255,255,.72)';
       ctx.font = '15px Arial';
-      ctx.fillText(`Total Wagered: $${(totalWagered * 0.01).toFixed(2)} (${totalWagered.toLocaleString()} pts)`, 250, 105);
-
       if (next) {
-        const barX = 50, barY = 140, barW = 400, barH = 22;
-        const pct = Math.min(100, Math.max(0, progress));
-
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.beginPath();
-        ctx.roundRect(barX, barY, barW, barH, 11);
-        ctx.fill();
-
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        const fillW = Math.max(4, Math.round(barW * pct / 100));
-        ctx.roundRect(barX, barY, Math.min(fillW, barW), barH, 11);
-        ctx.fill();
-
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 11px Arial';
-        ctx.fillText(`${pct.toFixed(1)}%`, 250, barY + 15);
-
-        const ptsNeeded = next.wagerReq - totalWagered;
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.font = '14px Arial';
-        ctx.fillText(`${ptsNeeded.toLocaleString()} pts ($${(ptsNeeded * 0.01).toFixed(2)}) to ${next.name}`, 250, 195);
-        ctx.fillStyle = 'rgba(255,255,255,0.35)';
-        ctx.font = '12px Arial';
-        ctx.fillText(`Reward for reaching ${next.name}: +${next.reward} pts`, 250, 220);
+        ctx.fillText(`${fmt(Math.max(0, next.wagerReq - totalWagered))} pts to ${next.name}`, 70, 292);
+        ctx.textAlign = 'right';
+        ctx.fillText(`Next reward: ${fmt(next.reward)} pts`, 690, 292);
       } else {
-        ctx.fillStyle = '#FFD700';
-        ctx.font = 'bold 20px Arial';
-        ctx.fillText('MAX RANK — Congratulations!', 250, 180);
+        ctx.fillText('Max rank reached', 70, 292);
       }
 
       buffer = canvas.toBuffer('image/png');
     }
 
     const embed = EmbedHelper.createDefault()
-      .setTitle(`${rank ? rank.emoji + ' ' : ''}${rank ? rank.name : 'Unranked'} — ${message.author.username}`)
+      .setTitle(`${rank ? rank.emoji + ' ' : ''}${user.username}'s Rank`)
       .setDescription(rank
-        ? `Total Wagered: **$${(totalWagered * 0.01).toFixed(2)}** (${totalWagered.toLocaleString()} pts)`
-        : `No rank yet. Wager **$${((Ranks.getAll()[0].wagerReq - totalWagered) * 0.01).toFixed(2)}** more.`)
+        ? `Rank: **${rank.name}**\nWagered: **${fmt(totalWagered)} pts**${next ? `\nNext: **${fmt(Math.max(0, next.wagerReq - totalWagered))} pts** to ${next.name}` : '\nMax rank reached.'}`
+        : 'No rank yet.')
       .setColor(config.colors.info)
       .setImage(buffer ? 'attachment://rank.png' : null);
 
-    EmbedHelper.withWebsiteLink(embed);
     const files = buffer ? [new AttachmentBuilder(buffer, { name: 'rank.png' })] : [];
     message.reply({ embeds: [embed], files });
   }

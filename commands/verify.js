@@ -51,7 +51,7 @@ module.exports = {
         { name: `${config.emojis.alert} Server Seed (revealed)`, value: `||\`${game.serverSeed}\`||`, inline: false }
       )
       .setColor(config.colors.info)
-      .setFooter({ text: 'Flipbets • Provably Fair' })
+      .setFooter({ text: 'EzBet • Provably Fair' })
       .setTimestamp();
 
     message.reply({ embeds: [embed] });

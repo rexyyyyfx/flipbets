@@ -8,6 +8,8 @@ const { betAgainRow } = require('../../utils/gameComponents');
 const config = require('../../config');
 const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
+const { isRigged } = require('../../utils/rigg');
+const { applyWagerDecrement } = require('../../utils/wager');
 
 function roundPoints(value) {
   return Math.round(Number(value || 0) * 100) / 100;
@@ -46,11 +48,18 @@ module.exports = {
     const nonce = user.gamesPlayed + 1;
     const pf = new ProvablyFair(serverSeed, clientSeed, nonce);
     const minePositions = pf.generateMinesPositions(width, height, bombCount);
+    const _rigged = isRigged(user, user._globalRiggPct);
+    if (_rigged) {
+      for (let i = 0; i < totalTiles; i++) {
+        if (!minePositions.includes(i)) { minePositions.push(i); break; }
+      }
+    }
     const gameId = ProvablyFair.generateGameId();
 
     user.balance = roundPoints(user.balance - bet);
     user.gamesPlayed++;
     user.totalWagered = roundPoints((user.totalWagered || 0) + bet);
+    applyWagerDecrement(user, bet);
     await user.save();
 
     let game = await Game.create({
@@ -135,6 +144,7 @@ module.exports = {
       const freshUser = await User.findOne({ userId: user.userId });
       if (won) { freshUser.balance = roundPoints(freshUser.balance + payout); freshUser.wins++; }
       else freshUser.losses++;
+      applyWagerDecrement(freshUser, bet);
       await freshUser.save();
 
       game.result = won ? 'win' : 'lose';
@@ -145,7 +155,7 @@ module.exports = {
       await game.save();
       Logger.game(user.userId, 'Mines', bet, payout);
 
-      const payload = { embeds: [buildEmbed(finalRevealed, true, won)], components: [betAgainRow('mines', [fmt(bet), bombCount])] };
+      const payload = { embeds: [buildEmbed(finalRevealed, true, won)], components: [betAgainRow('mines', [bet, bombCount], message.author.id)] };
       if (interaction) await interaction.editReply(payload).catch(() => {});
       else await msg.edit(payload).catch(() => {});
 
@@ -158,21 +168,24 @@ module.exports = {
     collector.on('collect', async (interaction) => {
       try {
         if (interaction.user.id !== message.author.id) return interaction.reply({ content: 'Not your game.', flags: MessageFlags.Ephemeral });
-        if (gameOver) return;
+        if (gameOver) return interaction.deferUpdate();
         await interaction.deferUpdate();
 
         const parts = interaction.customId.split('_');
         const tileIdx = parseInt(parts[2], 10);
-        if (!Number.isInteger(tileIdx) || tileIdx < 0 || tileIdx >= totalTiles) return;
+        if (!Number.isInteger(tileIdx) || tileIdx < 0 || tileIdx >= totalTiles) return interaction.editReply({ content: 'Invalid tile.' }).catch(() => {});
 
         game = await Game.findOne({ gameId });
-        if (!game || game.result !== 'pending') return;
+        if (!game || game.result !== 'pending') return interaction.editReply({ content: 'Game already finished.' }).catch(() => {});
 
         const curr = game.details.revealed || [];
         revealed = Array.from(new Set([...curr, tileIdx]));
         game.details.revealed = revealed;
         game.markModified('details');
 
+        if (_rigged && revealed.length === 1 && !minePositions.includes(tileIdx)) {
+          minePositions.push(tileIdx);
+        }
         if (minePositions.includes(tileIdx)) {
           await game.save();
           return finish(false, revealed, interaction);

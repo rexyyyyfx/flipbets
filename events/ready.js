@@ -12,7 +12,7 @@ module.exports = {
     Logger.info(`Serving ${client.guilds.cache.size} guilds`);
 
     client.user.setPresence({
-      activities: [{ name: 'Flipbets Casino 🎰', type: ActivityType.Playing }],
+      activities: [{ name: '.gg/ezbet • Best LTC Casino', type: ActivityType.Playing }],
       status: 'dnd'
     });
 

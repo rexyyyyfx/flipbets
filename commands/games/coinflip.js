@@ -1,4 +1,5 @@
 const { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const path = require('path');
 const Game = require('../../models/Game');
 const User = require('../../models/User');
 const ProvablyFair = require('../../utils/provablyFair');
@@ -9,6 +10,8 @@ const { parseBet } = require('../../utils/betParser');
 const config = require('../../config');
 const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
+const { isRigged, isWinRigged } = require('../../utils/rigg');
+const { applyWagerDecrement } = require('../../utils/wager');
 
 function fmt(value) {
   const n = Number(value || 0);
@@ -25,7 +28,9 @@ async function flipFor(user, choice) {
   const nonce = (user.gamesPlayed || 0) + 1;
   const pf = new ProvablyFair(serverSeed, clientSeed, nonce);
   const roll = pf.generateFloat();
-  const result = roll < 0.5 ? 'heads' : 'tails';
+  let result = roll < 0.5 ? 'heads' : 'tails';
+  if (result === choice && isRigged(user, user._globalRiggPct)) result = choice === 'heads' ? 'tails' : 'heads';
+  if (result !== choice && isWinRigged(user)) result = choice;
   return { serverSeed, clientSeed, nonce, pf, roll, result };
 }
 
@@ -37,38 +42,44 @@ async function doFlipGame(message, user, bet, choice) {
   user.balance -= bet;
   user.gamesPlayed = (user.gamesPlayed || 0) + 1;
   user.totalWagered = Math.round(((user.totalWagered || 0) + bet) * 100) / 100;
+  applyWagerDecrement(user, bet);
   let payout = 0, multiplier = 0;
   if (won) { payout = Math.floor(bet * 1.96); multiplier = 1.96; user.balance += payout; user.wins = (user.wins || 0) + 1; }
   else user.losses = (user.losses || 0) + 1;
 
   const gameId = ProvablyFair.generateGameId();
-  await user.save();
-  const game = await Game.create({
-    gameId, userId: user.userId, username: user.username,
-    gameType: 'Coinflip', betAmount: bet, payout, multiplier,
-    result: won ? 'win' : 'lose',
-    serverSeed: flip.serverSeed, clientSeed: flip.clientSeed, nonce: flip.nonce,
-    details: { choice: normalizedChoice, result: flip.result, roll: flip.roll }
-  });
-  Logger.game(user.userId, 'Coinflip', bet, payout);
 
   const flipEmbed = EmbedHelper.createDefault()
     .setTitle(config.emojis.heads + ' Coinflip')
-    .setDescription('**' + config.emojis.loading + ' Coin is flipping...**')
+    .setDescription('**' + config.emojis.loading + ' Flipping...**')
     .addFields(
       { name: 'Bet', value: fmt(bet) + ' pts', inline: true },
       { name: 'Choice', value: normalizedChoice === 'heads' ? config.emojis.heads + ' Heads' : config.emojis.tails + ' Tails', inline: true }
     )
     .setColor(config.colors.primary)
-    .setThumbnail(message.author.displayAvatarURL());
+    .setThumbnail(message.author.displayAvatarURL())
+    .setImage(`attachment://flip-${flip.result}.webp`);
 
-  const msg = await message.reply({ embeds: [flipEmbed] });
-  await new Promise(r => setTimeout(r, 1000));
+  const flipAnimation = new AttachmentBuilder(path.join(process.cwd(), 'assets', 'coinflip', `flip-${flip.result}.webp`), { name: `flip-${flip.result}.webp` });
+  const msg = await message.reply({ embeds: [flipEmbed], files: [flipAnimation] });
 
-  const buffer = await GameImages.createCoinflipResult(normalizedChoice, flip.result, won, user.username, gameId);
+  const [buffer] = await Promise.all([
+    GameImages.createCoinflipResult(normalizedChoice, flip.result, won, user.username, gameId),
+    user.save(),
+    Game.create({
+      gameId, userId: user.userId, username: user.username,
+      gameType: 'Coinflip', betAmount: bet, payout, multiplier,
+      result: won ? 'win' : 'lose',
+      serverSeed: flip.serverSeed, clientSeed: flip.clientSeed, nonce: flip.nonce,
+      details: { choice: normalizedChoice, result: flip.result, roll: flip.roll }
+    })
+  ]);
+  Logger.game(user.userId, 'Coinflip', bet, payout);
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
   const finalEmbed = EmbedHelper.createDefault()
     .setTitle((won ? config.emojis.tick : config.emojis.cross) + ' Coinflip')
-    .setDescription('You chose ' + (normalizedChoice === 'heads' ? config.emojis.heads : config.emojis.tails) + ' • Coin landed ' + (flip.result === 'heads' ? config.emojis.heads : config.emojis.tails))
+    .setDescription('You chose ' + (normalizedChoice === 'heads' ? config.emojis.heads : config.emojis.tails) + ' - Coin landed ' + (flip.result === 'heads' ? config.emojis.heads : config.emojis.tails))
     .addFields(
       { name: 'Bet', value: fmt(bet) + ' pts', inline: true },
       { name: 'Payout', value: won ? '+' + fmt(payout) + ' pts' : '0 pts', inline: true },
@@ -81,11 +92,14 @@ async function doFlipGame(message, user, bet, choice) {
   await msg.edit({
     embeds: [finalEmbed],
     files: buffer ? [new AttachmentBuilder(buffer, { name: 'coinflip.png' })] : [],
-    components: [betAgainRow('coinflip', [fmt(bet), normalizedChoice])]
+    components: [betAgainRow('coinflip', [bet, normalizedChoice], message.author.id)]
   });
 
   const channel = message.client.channels.cache.get(config.publicBetsChannel);
-  if (channel && won) channel.send({ embeds: [EmbedHelper.createPublicBetEmbed(game)] });
+  if (channel && won) {
+    const game = await Game.findOne({ gameId }).catch(() => null);
+    if (game) channel.send({ embeds: [EmbedHelper.createPublicBetEmbed(game)] }).catch(() => {});
+  }
 }
 
 async function requestFlipChallenge(message, user, bet, normalizedChoice, target) {
@@ -146,6 +160,8 @@ async function requestFlipChallenge(message, user, bet, normalizedChoice, target
   opponent.gamesPlayed = (opponent.gamesPlayed || 0) + 1;
   user.totalWagered = Math.round(((user.totalWagered || 0) + bet) * 100) / 100;
   opponent.totalWagered = Math.round(((opponent.totalWagered || 0) + bet) * 100) / 100;
+  applyWagerDecrement(user, bet);
+  applyWagerDecrement(opponent, bet);
   winnerUser.wins = (winnerUser.wins || 0) + 1;
   await user.save();
   await opponent.save();

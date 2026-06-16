@@ -11,14 +11,14 @@ module.exports = {
 
     const embed = EmbedHelper.createDefault()
       .setTitle(`${config.emojis.verified} Provably Fair`)
-      .setDescription(`Your personal provably fair settings for **Flipbets**.`)
+      .setDescription(`Your personal provably fair settings for **EzBet**.`)
       .addFields(
         { name: `${config.emojis.diamond} Client Seed`, value: `\`${cs}\``, inline: false },
         { name: `${config.emojis.highroller} Next Server Seed Hash`, value: `\`${ProvablyFair.hashServerSeed(ProvablyFair.generateServerSeed())}\``, inline: false },
         { name: `${config.emojis.alert} Note`, value: `Use \`${config.prefix}rotate <seed>\` to change your client seed. Leave seed empty for a random one.`, inline: false }
       )
       .setColor(config.colors.info)
-      .setFooter({ text: 'Flipbets • Provably Fair' })
+      .setFooter({ text: 'EzBet • Provably Fair' })
       .setTimestamp();
 
     message.reply({ embeds: [embed] });

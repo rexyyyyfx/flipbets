@@ -19,7 +19,7 @@ async function connectDB() {
     Logger.error(`MongoDB connection error: ${error.message}`);
     Logger.info('Trying alternative connection with hardcoded hosts...');
     try {
-      const altUri = 'mongodb://rexyyfx:Jaat9719@ac-kpnd4bo-shard-00-00.q7ekhuh.mongodb.net:27017,ac-kpnd4bo-shard-00-01.q7ekhuh.mongodb.net:27017,ac-kpnd4bo-shard-00-02.q7ekhuh.mongodb.net:27017/flipbets?ssl=true&replicaSet=atlas-tucnrr-shard-0&retryWrites=true&w=majority&authSource=admin';
+      const altUri = 'mongodb://rexyyfx:Jaat9719@ac-kpnd4bo-shard-00-00.q7ekhuh.mongodb.net:27017,ac-kpnd4bo-shard-00-01.q7ekhuh.mongodb.net:27017,ac-kpnd4bo-shard-00-02.q7ekhuh.mongodb.net:27017/ezbet?ssl=true&replicaSet=atlas-tucnrr-shard-0&retryWrites=true&w=majority&authSource=admin';
       await mongoose.connect(altUri, { serverSelectionTimeoutMS: 15000, family: 4, tlsAllowInvalidCertificates: true });
       Logger.success('Connected to MongoDB (via direct hosts)');
     } catch (altError) {

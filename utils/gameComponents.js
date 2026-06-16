@@ -1,10 +1,10 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
-function betAgainRow(command, args = []) {
+function betAgainRow(command, args = [], ownerId = 'any') {
   const safeArgs = args.map(arg => String(arg)).join(' ').slice(0, 70);
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`betagain|${command}|${safeArgs}`)
+      .setCustomId(`betagain|${ownerId}|${command}|${safeArgs}`)
       .setLabel('Bet Again')
       .setStyle(ButtonStyle.Primary)
   );

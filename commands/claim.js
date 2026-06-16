@@ -53,7 +53,7 @@ module.exports = {
       '**' + p.code + '** → **+' + fmt(p.amount) + ' pts**\nNew balance: **' + fmt(user.balance) + ' pts**' +
       (wagerReq > 0 ? '\n\nWager requirement: **' + fmt(wagerReq) + ' pts** (' + wm + 'x) before withdrawal' : '')
     );
-    emb.addFields({ name: 'Play on Website', value: `[flipbet.site](${config.websiteUrl})` });
+    emb.addFields({ name: 'Play on Website', value: `[ezbet.site](${config.websiteUrl})` });
     return message.reply({ embeds: [emb] });
   }
 };

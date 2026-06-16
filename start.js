@@ -1,4 +1,4 @@
-console.log('Starting Flipbets (Bot + Web in one process)...');
+console.log('Starting EzBet (Bot + Web in one process)...');
 process.env.RUNNING_VIA_START = '1';
 
 const path = require('path');

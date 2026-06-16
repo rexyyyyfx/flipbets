@@ -27,7 +27,7 @@ module.exports = {
         { name: `${config.emojis.alert} Important`, value: 'Future games will use this new seed. Previous games are unaffected.', inline: false }
       )
       .setColor(config.colors.success)
-      .setFooter({ text: 'Flipbets • Provably Fair' })
+      .setFooter({ text: 'EzBet • Provably Fair' })
       .setTimestamp();
 
     message.reply({ embeds: [embed] });

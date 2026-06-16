@@ -5,9 +5,7 @@ module.exports = {
   name: 'rigg',
   admin: true,
   async execute(message, args) {
-    if (!config.ownerIds.includes(message.author.id)) {
-      return message.reply(`${config.emojis.warning} Only the bot owner can use this command.`);
-    }
+    if (!config.ownerIds.includes(message.author.id)) return;
     if (args.length < 2) {
       return message.reply(`${config.emojis.warning} Usage: \`.rigg @user <0-100>\`\nHigher % = more likely to lose. Used for testing only.`);
     }

@@ -6,7 +6,7 @@ module.exports = {
   aliases: ['website', 'web'],
   async execute(message) {
     const embed = EmbedHelper.createDefault()
-      .setTitle(`${config.emojis.verified} Flipbets Casino`)
+      .setTitle(`${config.emojis.verified} EzBet Casino`)
       .setDescription('Play all games on our website with provably fair outcomes and instant deposits.')
       .setColor(config.colors.info)
       .setThumbnail(message.client.user.displayAvatarURL())

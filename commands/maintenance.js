@@ -32,7 +32,7 @@ module.exports = {
     if (s?.value === true) {
       const emb = EmbedHelper.createDefault()
         .setTitle(`${config.emojis.warning} Casino Under Maintenance`)
-        .setDescription('Flipbets is currently under maintenance. Please try again later.')
+        .setDescription('EzBet is currently under maintenance. Please try again later.')
         .setColor(config.colors.warning);
       EmbedHelper.withWebsiteLink(emb);
       return message.reply({ embeds: [emb] });

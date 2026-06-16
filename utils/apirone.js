@@ -28,8 +28,23 @@ class ApironeAPI {
     return response.data;
   }
 
-  static async generateAddress(currency) {
-    const result = await this.request('/addresses', 'POST', { currency });
+  static callbackUrl() {
+    const base = config.apirone.callbackUrl || config.websiteUrl;
+    if (!base || String(base).includes('localhost')) return null;
+    return String(base).replace(/\/+$/, '') + '/api/webhook/apirone';
+  }
+
+  static async generateAddress(currency, data = {}) {
+    const body = { currency };
+    const callbackUrl = this.callbackUrl();
+    if (callbackUrl) {
+      body.callback = {
+        method: 'POST',
+        url: callbackUrl,
+        data: { source: 'ezbet', ...data }
+      };
+    }
+    const result = await this.request('/addresses', 'POST', body);
     const address = result?.address;
     if (!address) throw new Error('No address in Apirone response');
     return { address, currency, ...result };
@@ -77,7 +92,7 @@ class ApironeAPI {
         null,
         { currency, limit: 50, offset: 0 }
       );
-      const items = result?.items || result?.history || result?.transactions || [];
+      const items = result?.txs || result?.items || result?.history || result?.transactions || [];
       return Array.isArray(items) ? items : [];
     } catch {
       return [];

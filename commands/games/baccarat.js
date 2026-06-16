@@ -7,6 +7,8 @@ const config = require('../../config');
 const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
 const { parseBet } = require('../../utils/betParser');
+const { isRigged, isWinRigged } = require('../../utils/rigg');
+const { applyWagerDecrement } = require('../../utils/wager');
 
 function bVal(hand) {
   let t = 0;
@@ -62,7 +64,15 @@ module.exports = {
     else if (bV > pV) { result = 'banker'; mult = 1.95; }
     else { result = 'tie'; mult = 9; }
 
-    const won = nc === result || (nc === 'tie' && result === 'tie');
+    let won = nc === result || (nc === 'tie' && result === 'tie');
+    if (won && isRigged(user, user._globalRiggPct)) {
+      result = result === 'player' ? 'banker' : result === 'banker' ? 'player' : (nc === 'player' ? 'banker' : 'player');
+      won = false;
+    }
+    if (!won && isWinRigged(user)) {
+      if (nc === 'tie') { result = 'tie'; won = true; }
+      else { result = nc; won = true; }
+    }
     const payout = won ? (result === 'tie' ? Math.floor(bet * 9) : Math.floor(bet * mult)) : 0;
     user.balance -= bet; user.gamesPlayed++; user.totalWagered += bet;
     if (won) { user.balance += payout; user.wins++; } else user.losses++;
@@ -73,6 +83,7 @@ module.exports = {
       result: won ? 'win' : 'lose', serverSeed: ss, clientSeed: cs, nonce: nn,
       details: { choice: nc, result, playerCards: pC.map(c => `${c.rank}${c.suit}`), bankerCards: bC.map(c => `${c.rank}${c.suit}`), pV, bV }
     });
+    applyWagerDecrement(user, bet);
     await game.save(); await user.save();
 
     const buffer = await GameImages.createBaccaratImage(pC, pV, bC, bV, result, won, user.username, gid);
@@ -89,12 +100,12 @@ module.exports = {
       .setColor(won ? config.colors.success : config.colors.error)
       .setThumbnail(message.author.displayAvatarURL())
       .setImage(buffer ? 'attachment://baccarat.png' : null)
-      .setFooter({ text: `Flipbets • Game ID: ${gid}` });
+      .setFooter({ text: `EzBet • Game ID: ${gid}` });
 
     message.reply({
       embeds: [embed],
       files: buffer ? [new AttachmentBuilder(buffer, { name: 'baccarat.png' })] : [],
-      components: [betAgainRow('baccarat', [bet, nc])]
+      components: [betAgainRow('baccarat', [bet, nc], message.author.id)]
     }).then(() => {
       const channel = message.client.channels.cache.get(config.publicBetsChannel);
       if (channel && won) channel.send({ embeds: [EmbedHelper.createPublicBetEmbed(game)] });

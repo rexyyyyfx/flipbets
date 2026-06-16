@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const ApironeAPI = require('../utils/apirone');
+const Settings = require('../models/Settings');
 const EmbedHelper = require('../utils/embedBuilder');
 const config = require('../config');
 
@@ -10,33 +10,39 @@ module.exports = {
     await message.reply(`${config.emojis.loading} Fetching house balance...`);
 
     try {
-      const ltcBal = await ApironeAPI.getBalance('ltc');
-      const totalSat = ltcBal.total || ltcBal.available || 0;
-      const totalLtc = totalSat / 1e8;
-      const ltcUsd = totalLtc * 80;
-
-      const agg = await User.aggregate([
-        { $group: { _id: null, totalBalance: { $sum: '$balance' } } }
+      const [depResult, balResult, wdrResult, fakeDoc] = await Promise.all([
+        User.aggregate([{ $group: { _id: null, total: { $sum: '$totalDeposited' } } }]),
+        User.aggregate([{ $group: { _id: null, total: { $sum: '$balance' } } }]),
+        User.aggregate([{ $group: { _id: null, total: { $sum: '$totalWithdrawn' } } }]),
+        Settings.findOne({ key: 'houseFakeBalance' }).lean()
       ]);
-      const playerPts = agg[0]?.totalBalance || 0;
-      const playerUsd = playerPts * config.conversionRate;
+
+      const totalDeposited = depResult[0]?.total || 0;
+      const totalBal = balResult[0]?.total || 0;
+      const totalWithdrawn = wdrResult[0]?.total || 0;
+      const fakeBal = fakeDoc ? Number(fakeDoc.value) || 0 : 0;
+      const netHouse = totalDeposited - totalWithdrawn - totalBal + fakeBal;
+
+      const toUsd = (pts) => `$${(pts * config.conversionRate).toFixed(2)}`;
+      const toPts = (pts) => `${Math.floor(pts).toLocaleString()} pts`;
 
       const embed = EmbedHelper.createDefault()
         .setTitle(`${config.emojis.litecoin} House Balance`)
-        .setDescription('Flipbets Casino Reserves')
+        .setDescription('EzBet Casino Reserves')
         .addFields(
-          { name: `${config.emojis.money} House Balance`, value: `**$${ltcUsd.toFixed(2)}** (${totalLtc.toFixed(6)} LTC)`, inline: true },
-          { name: `${config.emojis.wallet} Held by Players`, value: `**$${playerUsd.toFixed(2)}** (${Math.floor(playerPts).toLocaleString()} pts)`, inline: true }
+          { name: `${config.emojis.money} Deposited`, value: `${toUsd(totalDeposited)} (${toPts(totalDeposited)})`, inline: true },
+          { name: `${config.emojis.wallet} Held by Players`, value: `${toUsd(totalBal)} (${toPts(totalBal)})`, inline: true },
+          { name: `${config.emojis.verified} House Balance`, value: `${toUsd(Math.max(0, netHouse))} (${toPts(Math.max(0, netHouse))})`, inline: true }
         )
         .setColor(config.colors.gold)
-        .setFooter({ text: 'Flipbets • House Balance' })
+        .setFooter({ text: 'EzBet • House Balance' })
         .setTimestamp();
 
       EmbedHelper.withWebsiteLink(embed);
       message.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
-      message.reply(`${config.emojis.cross} Could not fetch house balance. API might be unavailable.`);
+      message.reply(`${config.emojis.cross} Could not fetch house balance.`);
     }
   }
 };

@@ -41,8 +41,7 @@ class EmbedHelper {
   }
 
   static withWebsiteLink(embed) {
-    if (!embed) return embed;
-    return embed.addFields({ name: 'Play on Website', value: `[flipbet.site](${config.websiteUrl})` });
+    return embed;
   }
 
   static createBalanceEmbed(user, balance, avatarURL) {
@@ -83,6 +82,7 @@ class EmbedHelper {
       'Blackjack': config.emojis.cards,
       'Wheel': config.emojis.highroller,
       'Roulette': config.emojis.highroller,
+      'Market': config.emojis.highroller,
       'Hilo': config.emojis.cards,
       'Baccarat': config.emojis.heart,
       'Coinflip': config.emojis.heads
@@ -99,7 +99,7 @@ class EmbedHelper {
         { name: `${config.emojis.verified} Game ID`, value: `\`${gameData.gameId}\``, inline: true }
       )
       .setColor(gameData.result === 'win' ? config.colors.success : config.colors.error)
-      .setFooter({ text: `Flipbets • Game ID: ${gameData.gameId}` })
+      .setFooter({ text: `EzBet • Game ID: ${gameData.gameId}` })
       .setTimestamp();
   }
 }

@@ -8,6 +8,8 @@ const config = require('../../config');
 const { sendPublic } = require('../../utils/broadcast');
 const Logger = require('../../utils/logger');
 const { parseBet } = require('../../utils/betParser');
+const { isRigged, isWinRigged } = require('../../utils/rigg');
+const { applyWagerDecrement } = require('../../utils/wager');
 
 function roundPoints(value) {
   return Math.round(Number(value || 0) * 100) / 100;
@@ -44,7 +46,9 @@ module.exports = {
     const clientSeed = user.clientSeed || ProvablyFair.generateClientSeed();
     const nonce = user.gamesPlayed + 1;
     const pf = new ProvablyFair(serverSeed, clientSeed, nonce);
-    const crashPoint = pf.generateLimboMultiplier();
+    let crashPoint = pf.generateLimboMultiplier();
+    if (crashPoint >= targetMult && isRigged(user, user._globalRiggPct)) crashPoint = Math.max(1.01, targetMult - 0.01);
+    if (crashPoint < targetMult && isWinRigged(user)) crashPoint = targetMult + 0.01;
     const won = crashPoint >= targetMult;
     const payout = won ? roundPoints(bet * targetMult) : 0;
 
@@ -73,6 +77,7 @@ module.exports = {
       nonce,
       details: { targetMultiplier: targetMult, crashPoint }
     });
+    applyWagerDecrement(user, bet);
     await user.save();
     Logger.game(user.userId, 'Limbo', bet, payout);
 
@@ -87,7 +92,7 @@ module.exports = {
     await message.reply({
       embeds: [embed],
       files: buffer ? [new AttachmentBuilder(buffer, { name: 'limbo.png' })] : [],
-      components: [betAgainRow('limbo', [fmt(bet), targetMult])]
+      components: [betAgainRow('limbo', [bet, targetMult], message.author.id)]
     });
 
     const channel = message.client.channels.cache.get(config.publicBetsChannel);

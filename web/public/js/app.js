@@ -18,8 +18,8 @@ let hlActive = false, hlGameId = null, hlStreakCount = 0, hlCurrentCard = null, 
 // Wheel
 let whlActive = false, whlRot = 0;
 
-let walletFiat = localStorage.getItem('flipbets_fiat') || 'USD';
-let walletShowFiat = localStorage.getItem('flipbets_fiat_toggle') === '1';
+let walletFiat = localStorage.getItem('ezbet_fiat') || 'USD';
+let walletShowFiat = localStorage.getItem('ezbet_fiat_toggle') === '1';
 
 const FIAT_RATES = { USD: 0.01, INR: 0.83, EUR: 0.0093 };
 const FIAT_SYMBOL = { USD: '$', INR: '\u20B9', EUR: '\u20AC' };
@@ -41,11 +41,11 @@ const formatBalance = pts => walletShowFiat ? formatFiat(pts) : nFmt(pts) + ' pt
 
 function loadSettings() {
   try {
-    const s = JSON.parse(localStorage.getItem('flipbets_settings') || '{}');
+    const s = JSON.parse(localStorage.getItem('ezbet_settings') || '{}');
     return { sound: s.sound !== false, anim: s.anim !== false, instant: !!s.instant, info: s.info !== false };
   } catch (e) { return { sound: true, anim: true, instant: false, info: true }; }
 }
-function saveSettings() { localStorage.setItem('flipbets_settings', JSON.stringify(settings)); }
+function saveSettings() { localStorage.setItem('ezbet_settings', JSON.stringify(settings)); }
 function saveAndApply() {
   const s = settings;
   s.sound = getEl('optSound')?.checked !== false;
@@ -91,6 +91,7 @@ async function api(url, opts = {}) {
 
 window.addEventListener('DOMContentLoaded', async () => {
   bindUI();
+  applySidebarState();
   await loadMe();
   applySettings();
   applyFiat();
@@ -174,7 +175,7 @@ function renderUI() {
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
 
 function playOnDiscord() {
-  const link = window.__discordInvite || 'https://discord.gg/yourserver';
+  const link = window.__discordInvite || 'https://discord.gg/ezbet';
   window.open(link, '_blank');
 }
 
@@ -184,6 +185,9 @@ function bindUI() {
       e.preventDefault();
       if (n.dataset.page) goPage(n.dataset.page);
     });
+  });
+  $$('.top-tab').forEach(t => {
+    t.addEventListener('click', e => { e.preventDefault(); goPage(t.dataset.page); });
   });
   $$('[data-page]').forEach(el => {
     if (el.classList.contains('section-more') || el.classList.contains('game-card') || el.classList.contains('brand-logo'))
@@ -199,7 +203,7 @@ function bindUI() {
     $$('.fiat-card').forEach(x => x.classList.remove('active'));
     c.classList.add('active');
     walletFiat = c.dataset.fiat;
-    localStorage.setItem('flipbets_fiat', walletFiat);
+    localStorage.setItem('ezbet_fiat', walletFiat);
     renderUI();
   }));
 
@@ -218,7 +222,7 @@ function bindUI() {
     if (!el) return;
     el.addEventListener('change', () => {
       walletShowFiat = getEl('setShowFiat').checked;
-      localStorage.setItem('flipbets_fiat_toggle', walletShowFiat ? '1' : '0');
+      localStorage.setItem('ezbet_fiat_toggle', walletShowFiat ? '1' : '0');
       renderUI();
     });
   });
@@ -240,7 +244,20 @@ function bindUI() {
   if (statsBtn) statsBtn.addEventListener('click', toggleFloatingStats);
   const fairnessBtn = getEl('fairnessBtn') || document.querySelector('.gb-fairness');
   if (fairnessBtn) fairnessBtn.addEventListener('click', togglePFOverlay);
+  document.addEventListener('click', e => {
+    const menu = getEl('profileMenu');
+    if (menu && !menu.contains(e.target)) menu.classList.remove('show');
+  });
 }
+
+function toggleSidebar() {
+  const collapsed = document.body.classList.toggle('sidebar-collapsed');
+  localStorage.setItem('ezbet_sidebar_collapsed', collapsed ? '1' : '0');
+}
+function applySidebarState() {
+  document.body.classList.toggle('sidebar-collapsed', localStorage.getItem('ezbet_sidebar_collapsed') === '1');
+}
+function toggleProfileMenu() { getEl('profileMenu')?.classList.toggle('show'); }
 
 function applySettings() { ['optSound', 'optAnim', 'optInstant', 'optInfo'].forEach(id => { const e = getEl(id); if (e) e.checked = settings[id.replace('opt', '').toLowerCase()]; }); }
 function applyFiat() {
@@ -335,6 +352,8 @@ function goPage(name) {
   const pg = getEl('page-' + name);
   if (pg) { pg.classList.add('active'); pg.style.display = 'block'; }
   $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === name));
+  const topMode = name === 'sport' ? 'sport' : 'casino';
+  $$('.top-tab').forEach(t => t.classList.toggle('active', t.dataset.page === topMode));
   window.scrollTo(0, 0);
   // Update URL
   const url = name === 'home' ? '/' : '/' + name;
@@ -871,9 +890,9 @@ async function loadPublicConfig() {
 }
 
 // =========== WALLET ===========
-function openWalletModal() {
+function openWalletModal(tab) {
   if (!user) { window.location.href = '/auth/discord'; return; }
-  switchWalletTab('overview');
+  switchWalletTab(tab || 'overview');
   getEl('walletModal').classList.add('show');
   const avail = getEl('wdrAvail'); if (avail) avail.textContent = nFmt(user.balance || 0);
   setTimeout(() => { loadDepositAddress(); wdrPreview(); }, 200);
@@ -905,6 +924,13 @@ async function loadDepositAddress() {
 
   const canvas = getEl('depositQrCanvas');
   const placeholder = getEl('depositQrPlaceholder');
+  if (res.qrDataUrl && placeholder) {
+    if (canvas) canvas.style.display = 'none';
+    placeholder.style.display = 'flex';
+    placeholder.innerHTML = `<img class="deposit-qr-img" src="${esc(res.qrDataUrl)}" alt="Litecoin deposit QR"/>`;
+    loadDepositRecent();
+    return;
+  }
   if (canvas) {
     try {
       canvas.style.display = 'block';
@@ -915,8 +941,17 @@ async function loadDepositAddress() {
           if (err) { canvas.style.display = 'none'; if (placeholder) { placeholder.style.display = 'flex'; placeholder.innerHTML = '<span style="color:var(--red)">QR error</span>'; } }
         });
       } else {
-        canvas.style.display = 'none';
-        if (placeholder) { placeholder.style.display = 'flex'; placeholder.innerHTML = '<span class="muted">QR not available</span>'; }
+        try {
+          canvas.style.display = 'block';
+          if (placeholder) placeholder.style.display = 'none';
+          canvas.width = 220; canvas.height = 220;
+          const QR = window.QRCode || window.qrcode;
+          if (QR && typeof QR.toCanvas === 'function') QR.toCanvas(canvas, addr, { width: 220, margin: 2, color: { dark: '#0f1923', light: '#fff' } });
+          else {
+            canvas.style.display = 'none';
+            if (placeholder) { placeholder.style.display = 'flex'; placeholder.innerHTML = '<span class="muted">Use address below to deposit</span>'; }
+          }
+        } catch (e) { console.error('QR error:', e); canvas.style.display = 'none'; if (placeholder) { placeholder.style.display = 'flex'; placeholder.innerHTML = '<span class="muted">Use address below to deposit</span>'; } }
       }
     } catch (e) { console.error('QR error:', e); }
   }
@@ -1064,12 +1099,12 @@ async function logout() { await api('/auth/logout', { method: 'POST' }); user = 
 
 // =========== GAMES LIST ===========
 const GAMES = [
-  { name: 'Mines', page: 'mines', img: 'mines.png', tag: 'ORIGINAL' },
-  { name: 'Limbo', page: 'limbo', img: 'limbo.png', tag: 'ORIGINAL' },
-  { name: 'Blackjack', page: 'blackjack', img: 'blackjack.png', tag: 'ORIGINAL' },
-  { name: 'Coinflip', page: 'coinflip', img: 'coinflip.png', tag: 'ORIGINAL' },
-  { name: 'HiLo', page: 'hilo', img: 'hilo.png', tag: 'ORIGINAL' },
-  { name: 'Wheel', page: 'wheel', img: 'crash.png', tag: 'ORIGINAL' }
+  { name: 'Mines', page: 'mines', img: 'mines.webp', tag: 'ORIGINAL' },
+  { name: 'Limbo', page: 'limbo', img: 'limbo.webp', tag: 'ORIGINAL' },
+  { name: 'Blackjack', page: 'blackjack', img: 'blackjack.webp', tag: 'ORIGINAL' },
+  { name: 'Coinflip', page: 'coinflip', img: 'coinflip.webp', tag: 'ORIGINAL' },
+  { name: 'HiLo', page: 'hilo', img: 'hilo.webp', tag: 'ORIGINAL' },
+  { name: 'Wheel', page: 'wheel', img: 'wheel.webp', tag: 'ORIGINAL' }
 ];
 
 function renderCasinoGrid() {
@@ -1096,7 +1131,7 @@ async function loadLiveWins() {
     const multTxt = (u.multiplier || 0).toFixed(2) + 'x';
     return `<div class="live-win">
       <div class="lw-user">
-        <div class="lw-game-icon"><svg class="ni" style="width:18px;height:18px;color:var(--accent)"><use href="#${gameIcon(u.game)}"/></svg></div>
+        <div class="lw-game-icon"><svg class="ni" style="width:18px;height:18px"><use href="#${gameIcon(u.game)}"/></svg></div>
         <div class="lw-info">
           <span class="lw-name">${esc(u.username || 'Player')}</span>
           <span class="lw-game">${esc(u.game || '')}</span>
@@ -1312,7 +1347,10 @@ function computeRank(w) {
   for (const r of RANKS) { if (w >= r.min) c = r; else break; }
   const idx = RANKS.indexOf(c);
   const next = RANKS[idx + 1];
-  return { ...c, next: next?.min || null, nextName: next?.name || '' };
+  const prevMin = c.min || 0;
+  const span = Math.max(1, (next?.min || c.min || 1) - prevMin);
+  const pct = next ? Math.min(99, Math.max(0, ((w - prevMin) / span) * 100)) : 100;
+  return { ...c, next: next?.min || null, nextName: next?.name || '', pct };
 }
 function rankImg(name) { const r = RANKS.find(x => x.name === name) || RANKS[0]; return `<img class="rank-img" src="/assets/ranks/${r.img}" alt="${r.name}">`; }
 
@@ -1338,6 +1376,7 @@ function resetSessionStats() {
   toast('Session stats reset', 'success');
 }
 function showResult(text, cls) {
+  if (cls !== 'win') return;
   const ov = document.createElement('div');
   ov.className = 'mines-result-toast' + (cls ? ' ' + cls : '');
   ov.textContent = text;
@@ -1348,7 +1387,7 @@ function showResult(text, cls) {
 function openSettings() {
   const overlay = getEl('settingsOverlay');
   if (overlay) { overlay.style.display = 'flex'; return; }
-  const cur = localStorage.getItem('flipbets_settings') || '{}';
+  const cur = localStorage.getItem('ezbet_settings') || '{}';
   let s; try { s = JSON.parse(cur); } catch { s = {}; }
   const sound = s.sound !== false;
   const animations = s.animations !== false;
@@ -1389,7 +1428,7 @@ function saveSettings() {
     animations: getEl('setAnim')?.checked !== false,
     showOdds: getEl('setOdds')?.checked !== false
   };
-  localStorage.setItem('flipbets_settings', JSON.stringify(s));
+  localStorage.setItem('ezbet_settings', JSON.stringify(s));
   toast('Settings saved', 'success');
   closeSettings();
 }
@@ -1663,12 +1702,11 @@ async function minesTap(idx) {
     renderUI();
     renderMinesTiles();
     const btn = getEl('minesBetBtn');
-    btn.innerHTML = '<img src="assets/icons/bet_icon.svg" class="bet-btn-img" alt=""/><span>Bet</span>';
+    btn.innerHTML = '<svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span>';
     btn.className = 'gc-play';
     const rand = getEl('minesRandomBtn'); if (rand) rand.disabled = true;
     minesUpdate();
-    showMinesResult('-', res.bet || 0);
-    toast('Bomb! Lost ' + nFmt(res.bet), 'error');
+    toast('Bomb!', 'error');
     minesGameId = null;
   }
   minesTapping = false;
@@ -1692,7 +1730,6 @@ async function minesCashout() {
   user.balance = res.balance; renderUI(); minesActive = false; minesRevealed = 0;
   const ov = getEl('minesCashoutOverlay');
   getEl('minesCashoutMult').textContent = (res.multiplier || 0).toFixed(2) + 'x';
-  getEl('minesCashoutPayout').textContent = '+' + nFmt(res.payout);
   ov.classList.add('show');
   btn.innerHTML = '<svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span>';
   btn.className = 'gc-play';
@@ -1700,8 +1737,7 @@ async function minesCashout() {
   minesUpdate();
   setTimeout(() => ov.classList.remove('show'), 3000);
   minesGameId = null;
-  showMinesResult('+', res.payout, 'win');
-  toast('Cashed out +' + nFmt(res.payout), 'success');
+    toast('Cashed out', 'success');
 }
 
 // =================== BLACKJACK ===================
@@ -1818,14 +1854,13 @@ function updateBJ(state) {
     const label = isWin ? 'WIN' : (isPush ? 'PUSH' : 'LOST');
     wrap.innerHTML = `<button class="gc-play" onclick="bjReset()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span></button>`;
     bjActive = false; bjGameId = null;
-    showResult(label + ' ' + prefix + nFmt(state.payout || 0), isWin ? 'win' : (isPush ? 'push' : ''));
     toast(isWin ? 'You won!' : isPush ? 'Push' : 'You lost', isWin ? 'success' : 'info');
     return;
   }
   wrap.innerHTML =
     `<button class="gc-play bj-action-btn" onclick="bjHit()"><img src="assets/icons/handshake.svg" class="bj-act-icon" alt=""/><span>Hit</span></button>` +
     `<button class="gc-play bj-action-btn bj-stand" onclick="bjStand()"><img src="assets/icons/secure.svg" class="bj-act-icon" alt=""/><span>Stand</span></button>` +
-    (state.canDouble !== false ? `<button class="gc-play bj-action-btn bj-double" onclick="bjDoubleDown()"><img src="assets/icons/dice.svg" class="bj-act-icon" alt=""/><span>Double</span></button>` : '') +
+    (state.canDouble === true ? `<button class="gc-play bj-action-btn bj-double" onclick="bjDoubleDown()"><img src="assets/icons/dice.svg" class="bj-act-icon" alt=""/><span>Double</span></button>` : '') +
     (state.canSplit ? `<button class="gc-play bj-action-btn bj-split" onclick="toast('Split coming soon','info')"><img src="assets/icons/cards.svg" class="bj-act-icon" alt=""/><span>Split</span></button>` : '');
 }
 async function bjHit() { if (!bjActive || !bjGameId) return; const r = await api('/api/games/blackjack/hit', { method: 'POST', body: JSON.stringify({ gameId: bjGameId }) }); if (!r) return; if (r.dealerHand) renderBJ(r.dealerHand, r.playerHand, !r.gameOver, r.currentBet || r.bet); if (r.balance !== undefined) { user.balance = r.balance; renderUI(); } updateBJ(r); }
@@ -1978,8 +2013,7 @@ async function cfFlip() {
   setTimeout(() => coin.classList.add('cf-land'), 2400);
 
   setTimeout(() => {
-    const rEl = getEl('cfResult');
-    rEl.innerHTML = '<div class="' + (won ? 'win' : 'lose') + '">' + result.toUpperCase() + ' \u2014 ' + (won ? 'Won ' + nFmt(res.payout) : 'Lost') + '</div>';
+    showResult(result.toUpperCase(), won ? 'win' : '');
     btn.disabled = false; btn.innerHTML = '<svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Flip Coin</span>';
     cfActive = false;
     toast(won ? 'You won!' : 'You lost', won ? 'success' : 'error');
@@ -2081,8 +2115,8 @@ async function hlGuess(choice) {
     hlRenderStreak();
     if (res.gameOver) {
       user.balance = res.balance || user.balance; renderUI();
-      showResult('WIN +' + nFmt(res.payout || 0), 'win');
-  toast('Cashed out +' + nFmt(res.payout), 'success');
+      showResult('WIN', 'win');
+  toast('You cleared the deck!', 'success');
 
       hlActive = false; hlGameId = null;
       hlStreakCount = 0; hlCurrentMult = 1;
@@ -2104,8 +2138,7 @@ async function hlGuess(choice) {
     if (res.balance !== undefined) { user.balance = res.balance; renderUI(); }
     hlActive = false; hlGameId = null;
     const lostAmt = res.bet || parseInt(getEl('hlBet')?.value || 0);
-    showResult('LOST -' + nFmt(lostAmt), '');
-    toast('Wrong! Lost ' + nFmt(lostAmt), 'error');
+    toast('Wrong!', 'error');
     if (next) next.classList.add('hl-flip-wrong');
     setTimeout(() => {
       hlStreakCount = 0; hlCurrentMult = 1;
@@ -2122,9 +2155,9 @@ async function hlCashout() {
   const res = await api('/api/games/hilo/cashout', { method: 'POST', body: JSON.stringify({ gameId: hlGameId }) });
   if (!res) return;
   user.balance = res.balance; renderUI();
-  toast('Cashed out +' + nFmt(res.payout), 'success');
+  toast('Cashed out', 'success');
   hlActive = false; hlGameId = null;
-  getEl('hlStats').textContent = 'Cashed out: ' + nFmt(res.payout);
+  getEl('hlStats').textContent = 'Cashed out';
   hlStreakCount = 0; hlCurrentMult = 1;
   hlRenderStreak();
   getEl('hlActions').innerHTML = '<button class="gc-play" onclick="hlStart()"><svg class="bet-btn-icon"><use href="#i-bet"/></svg><span>Bet</span></button>';
@@ -2155,9 +2188,9 @@ async function whlSpin() {
   setTimeout(() => {
     const mult = res.multiplier;
     const won = mult > 0;
-    getEl('whlResult').innerHTML = '<div class="' + (won ? 'win' : 'lose') + '">' + mult + 'x \u2014 ' + (won ? 'Won ' + nFmt(res.payout) : 'Lost') + '</div>';
+    showResult(mult + 'x', won ? 'win' : '');
     whlActive = false;
-    toast(won ? 'Wheel: +' + nFmt(res.payout) : 'Wheel: 0x', won ? 'success' : 'error');
+    toast(won ? 'Wheel won' : 'Wheel: 0x', won ? 'success' : 'error');
   }, 4100);
 }
 

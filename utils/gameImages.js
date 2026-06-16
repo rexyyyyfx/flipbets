@@ -21,7 +21,7 @@ function drawBackground(ctx, w, h) {
 function drawWatermark(ctx, w, h) {
   ctx.fillStyle = 'rgba(255,255,255,0.12)';
   ctx.font = '11px Arial'; ctx.textAlign = 'center';
-  ctx.fillText('Flipbets', w / 2, h - 12);
+  ctx.fillText('EzBet', w / 2, h - 12);
 }
 
 function drawUsername(ctx, username, w) {
@@ -211,111 +211,255 @@ class GameImages {
   static async createCoinflipResult(choice, result, won, username, gameId) {
     if (!canvasModule) return null;
     const { createCanvas } = canvasModule;
-    const canvas = createCanvas(360, 250);
+    const canvas = createCanvas(420, 300);
     const ctx = canvas.getContext('2d');
-    clear(ctx, 360, 250);
-    fillPanel(ctx, 0, 0, 360, 250, 18);
+    clear(ctx, 420, 300);
+    fillPanel(ctx, 0, 0, 420, 300, 18);
 
-    const cx = 180, cy = 105, r = 68;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    const coin = ctx.createRadialGradient(cx - 24, cy - 28, 4, cx, cy, r);
-    if (won) {
-      coin.addColorStop(0, '#fff7ad');
-      coin.addColorStop(0.3, '#ffd700');
-      coin.addColorStop(1, '#9a6500');
-    } else {
-      coin.addColorStop(0, '#f1f5f9');
-      coin.addColorStop(0.45, '#94a3b8');
-      coin.addColorStop(1, '#334155');
+    function drawCoin(cx, cy, r, side) {
+      ctx.save();
+      ctx.shadowColor = side === 'heads' ? 'rgba(250,204,21,.34)' : 'rgba(167,139,250,.28)';
+      ctx.shadowBlur = 26;
+      ctx.shadowOffsetY = 8;
+
+      const outer = ctx.createRadialGradient(cx - r * .35, cy - r * .45, 2, cx, cy, r);
+      if (side === 'heads') {
+        outer.addColorStop(0, '#fff7c7');
+        outer.addColorStop(0.55, '#ffd84a');
+        outer.addColorStop(1, '#a66700');
+      } else {
+        outer.addColorStop(0, '#eef0ff');
+        outer.addColorStop(0.55, '#8c88aa');
+        outer.addColorStop(1, '#1b1725');
+      }
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = outer;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r - 7, 0, Math.PI * 2);
+      ctx.fillStyle = side === 'heads' ? '#fff0a3' : '#aeb5ca';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r - 13, 0, Math.PI * 2);
+      const coin = ctx.createRadialGradient(cx - r * .35, cy - r * .45, 3, cx, cy, r);
+      if (side === 'heads') {
+        coin.addColorStop(0, '#fff7b8');
+        coin.addColorStop(0.3, '#ffd338');
+        coin.addColorStop(0.72, '#f59e0b');
+        coin.addColorStop(1, '#9a5700');
+      } else {
+        coin.addColorStop(0, '#d8d5ff');
+        coin.addColorStop(0.32, '#817a9f');
+        coin.addColorStop(0.72, '#353044');
+        coin.addColorStop(1, '#171421');
+      }
+      ctx.fillStyle = coin;
+      ctx.fill();
+
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = side === 'heads' ? '#b77900' : '#241f33';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r - 22, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = side === 'heads' ? '#fff4b8' : '#d8d5ff';
+      ctx.strokeStyle = side === 'heads' ? '#ad7400' : '#242033';
+      ctx.lineWidth = 5;
+      ctx.font = `bold ${Math.round(r * .9)}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const letter = side === 'heads' ? 'H' : 'T';
+      ctx.strokeText(letter, cx, cy + 1);
+      ctx.fillText(letter, cx, cy + 1);
+      ctx.font = `bold ${Math.round(r * .15)}px Arial`;
+      ctx.fillText(side.toUpperCase(), cx, cy + r * .66);
+      ctx.restore();
     }
-    ctx.fillStyle = coin;
-    ctx.fill();
-    ctx.strokeStyle = won ? '#fef3c7' : '#cbd5e1';
-    ctx.lineWidth = 3;
-    ctx.stroke();
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 48px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(result === 'heads' ? 'H' : 'T', cx, cy + 1);
+    drawCoin(210, 112, 84, result);
 
     ctx.fillStyle = won ? C.green : C.red;
-    ctx.font = 'bold 22px Arial';
-    ctx.fillText(won ? 'WON' : 'LOST', cx, 205);
+    ctx.font = 'bold 28px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(won ? 'WON' : 'LOST', 210, 230);
+    ctx.fillStyle = C.muted;
+    ctx.font = '13px Arial';
+    ctx.fillText(`Choice: ${choice.toUpperCase()}  |  Result: ${result.toUpperCase()}`, 210, 260);
     return canvas.toBuffer('image/png');
   }
 
   static async createBlackjackImage(playerHand, playerTotal, dealerHand, dealerTotal, result, hideDealer, username, gameId) {
     if (!canvasModule) return null;
     const { createCanvas } = canvasModule;
-    const canvas = createCanvas(400, 280);
+    const canvas = createCanvas(800, 560);
     const ctx = canvas.getContext('2d');
-    clear(ctx, 400, 280);
+    clear(ctx, 800, 560);
 
-    fillBoard(ctx, 0, 0, 400, 280, 18);
-    ctx.fillStyle = C.muted;
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('DEALER', 16, 27);
-    ctx.fillText('YOU', 16, 136);
+    const bg = ctx.createLinearGradient(0, 0, 0, 560);
+    bg.addColorStop(0, '#090a0f');
+    bg.addColorStop(1, '#020304');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 800, 560);
 
-    ctx.fillStyle = C.text;
-    ctx.font = 'bold 20px Arial';
+    ctx.save();
+    ctx.translate(400, 280);
+    ctx.scale(1.08, .78);
+    ctx.beginPath();
+    ctx.arc(0, 0, 275, 0, Math.PI * 2);
+    const felt = ctx.createRadialGradient(-80, -90, 40, 0, 0, 290);
+    felt.addColorStop(0, '#1b1d24');
+    felt.addColorStop(.72, '#0a0d12');
+    felt.addColorStop(1, '#010203');
+    ctx.fillStyle = felt;
+    ctx.fill();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#1a222c';
+    ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,.08)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 230, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = 'rgba(255,255,255,.86)';
+    ctx.font = 'bold 29px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(hideDealer ? String(dealerHand?.[0]?.value || '') : String(dealerTotal), 362, 30);
-    ctx.fillText(String(playerTotal), 362, 139);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(hideDealer ? String(dealerHand?.[0]?.rank || dealerHand?.[0]?.value || '') : String(dealerTotal), 214, 162);
+    ctx.fillText(String(playerTotal), 212, 408);
 
-    drawHand(ctx, dealerHand, 20, 40, 56, 78, 10, 270, hideDealer ? 1 : -1);
-    drawHand(ctx, playerHand, 20, 147, 56, 78, 10, 270);
+    ctx.fillStyle = 'rgba(255,255,255,.28)';
+    ctx.font = 'bold 13px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('DEALER', 300, 48);
+    ctx.fillText('YOU', 286, 292);
+
+    drawHand(ctx, dealerHand, 304, 58, 132, 188, -78, 330, hideDealer ? 1 : -1);
+    drawHand(ctx, playerHand, 288, 302, 132, 188, -74, 370);
+
+    ctx.save();
+    ctx.translate(672, 72);
+    roundRect(ctx, 0, 0, 118, 168, 13);
+    ctx.fillStyle = '#293446';
+    ctx.fill();
+    ctx.strokeStyle = '#07080c';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(148,163,184,.28)';
+    ctx.lineWidth = 2;
+    for (let x = 20; x < 104; x += 14) {
+      ctx.beginPath();
+      ctx.moveTo(x, 22);
+      ctx.lineTo(x, 146);
+      ctx.stroke();
+    }
+    for (let y = 22; y < 148; y += 14) {
+      ctx.beginPath();
+      ctx.moveTo(20, y);
+      ctx.lineTo(104, y);
+      ctx.stroke();
+    }
+    ctx.restore();
 
     const label = resultText(result);
     if (label) {
       ctx.fillStyle = result === 'tie' ? C.yellow : result === 'win' ? C.green : C.red;
-      ctx.font = 'bold 24px Arial';
+      ctx.font = 'bold 30px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(label, 252, 242);
+      ctx.fillText(label, 400, 528);
     }
+
+    ctx.fillStyle = 'rgba(255,255,255,.16)';
+    ctx.font = '12px Arial';
+    ctx.fillText(`Game ID: ${gameId}`, 400, 550);
 
     return canvas.toBuffer('image/png');
   }
 
-  static async createWheelImage(slice, multiplier, won, username, gameId) {
+  static async createWheelImage(slice, multiplier, won, username, gameId, segments = null) {
     if (!canvasModule) return null;
     const { createCanvas } = canvasModule;
-    const canvas = createCanvas(360, 360);
+    const canvas = createCanvas(620, 480);
     const ctx = canvas.getContext('2d');
-    clear(ctx, 360, 360);
-    fillPanel(ctx, 0, 0, 360, 360, 18);
+    clear(ctx, 620, 480);
+    fillPanel(ctx, 0, 0, 620, 480, 18);
 
-    const cx = 180, cy = 166, r = 122;
-    const colors = ['#dc2626', '#f59e0b', '#16a34a', '#2563eb', '#7c3aed', '#db2777', '#991b1b', '#ca8a04', '#15803d', '#1d4ed8', '#6d28d9', '#be185d'];
-    const arc = Math.PI * 2 / 12;
-    for (let i = 0; i < 12; i++) {
+    const layout = segments && segments.length ? segments : [
+      { mult: 0 }, { mult: 1.2 }, { mult: 0 }, { mult: 1.5 },
+      { mult: 0 }, { mult: 2 }, { mult: 0 }, { mult: 3 },
+      { mult: 0 }, { mult: 5 }, { mult: 0 }, { mult: 10 }
+    ];
+    const selectedIndex = Number.isFinite(Number(slice?.index ?? slice)) ? Number(slice?.index ?? slice) : 0;
+    const cx = 235, cy = 232, r = 175;
+    const colors = ['#161822', '#2563eb', '#171924', '#16a34a', '#161822', '#f59e0b', '#171924', '#dc2626', '#161822', '#7c3aed', '#171924', '#facc15'];
+    const arc = Math.PI * 2 / layout.length;
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.45)';
+    ctx.shadowBlur = 22;
+    ctx.shadowOffsetY = 10;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 12, 0, Math.PI * 2);
+    ctx.fillStyle = '#080a12';
+    ctx.fill();
+    ctx.restore();
+
+    for (let i = 0; i < layout.length; i++) {
+      const start = (i - selectedIndex) * arc - Math.PI / 2 - arc / 2;
+      const end = start + arc;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, i * arc - Math.PI / 2, (i + 1) * arc - Math.PI / 2);
+      ctx.arc(cx, cy, r, start, end);
       ctx.closePath();
-      ctx.fillStyle = i === slice ? '#e5e7eb' : colors[i];
+      const grad = ctx.createRadialGradient(cx, cy, 12, cx, cy, r);
+      grad.addColorStop(0, i === selectedIndex ? '#fbfbff' : '#2c2f3d');
+      grad.addColorStop(0.6, i === selectedIndex ? '#dfe6f3' : colors[i % colors.length]);
+      grad.addColorStop(1, i === selectedIndex ? '#ffffff' : colors[i % colors.length]);
+      ctx.fillStyle = grad;
       ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0,0,0,0.65)';
+      ctx.lineWidth = 3;
       ctx.stroke();
+
+      const label = layout[i].mult > 0 ? `${layout[i].mult}x` : 'LOSE';
+      const mid = start + arc / 2;
+      ctx.save();
+      ctx.translate(cx + Math.cos(mid) * 119, cy + Math.sin(mid) * 119);
+      ctx.rotate(mid + Math.PI / 2);
+      ctx.fillStyle = i === selectedIndex ? '#111827' : '#f8fafc';
+      ctx.font = 'bold 15px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, 0, 0);
+      ctx.restore();
     }
 
     ctx.beginPath();
-    ctx.moveTo(cx, cy - r - 20);
-    ctx.lineTo(cx - 13, cy - r);
-    ctx.lineTo(cx + 13, cy - r);
+    ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
+    ctx.strokeStyle = '#02030a';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r - 30);
+    ctx.lineTo(cx - 18, cy - r + 2);
+    ctx.lineTo(cx + 18, cy - r + 2);
     ctx.closePath();
     ctx.fillStyle = '#ffd700';
     ctx.fill();
+    ctx.strokeStyle = '#8a5a00';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(cx, cy, 44, 0, Math.PI * 2);
-    const hub = ctx.createRadialGradient(cx - 12, cy - 14, 2, cx, cy, 44);
+    ctx.arc(cx, cy, 58, 0, Math.PI * 2);
+    const hub = ctx.createRadialGradient(cx - 12, cy - 14, 2, cx, cy, 58);
     hub.addColorStop(0, '#fff7ad');
     hub.addColorStop(0.45, '#ffd700');
     hub.addColorStop(1, '#8a5a00');
@@ -324,65 +468,195 @@ class GameImages {
     ctx.strokeStyle = '#fef3c7';
     ctx.stroke();
     ctx.fillStyle = '#111827';
-    ctx.font = 'bold 16px Arial';
+    ctx.font = 'bold 21px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${Number(multiplier || 0).toFixed(2)}x`, cx, cy + 1);
 
+    roundRect(ctx, 452, 58, 128, 238, 14);
+    ctx.fillStyle = 'rgba(5,8,14,.48)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.08)';
+    ctx.stroke();
+    ctx.fillStyle = C.text;
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('MULTIPLIERS', 472, 88);
+    ctx.font = '14px Arial';
+    const wins = layout.filter(s => s.mult > 0).map(s => `${s.mult}x`);
+    wins.forEach((label, i) => {
+      ctx.fillStyle = label === `${multiplier}x` && won ? C.green : i === wins.length - 1 ? C.yellow : C.muted;
+      ctx.fillText(label, 476, 120 + i * 31);
+    });
+
     ctx.fillStyle = won ? C.green : C.red;
-    ctx.font = 'bold 20px Arial';
-    ctx.fillText(won ? 'WON' : 'LOST', cx, 326);
+    ctx.font = 'bold 25px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(won ? 'WON' : 'LOST', cx, 438);
+    ctx.fillStyle = 'rgba(255,255,255,.24)';
+    ctx.font = '12px Arial';
+    ctx.fillText(`Game ID: ${gameId}`, 496, 438);
     return canvas.toBuffer('image/png');
   }
 
   static async createRouletteImage(number, color, won, username, gameId) {
     if (!canvasModule) return null;
     const { createCanvas } = canvasModule;
-    const canvas = createCanvas(320, 260);
+    const canvas = createCanvas(400, 360);
     const ctx = canvas.getContext('2d');
-    clear(ctx, 320, 260);
-    fillPanel(ctx, 0, 0, 320, 260, 18);
+    clear(ctx, 400, 360);
+    fillPanel(ctx, 0, 0, 400, 360, 18);
 
-    const c = color === 'red' ? C.red : color === 'green' ? C.green : '#111827';
+    const cx = 200, cy = 160, r = 118;
+    const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+    const order = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+    const arc = Math.PI * 2 / order.length;
+    for (let i = 0; i < order.length; i++) {
+      const n = order[i];
+      const start = i * arc - Math.PI / 2;
+      const end = start + arc;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = n === 0 ? '#16a34a' : redNums.has(n) ? '#dc2626' : '#111827';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      const mid = start + arc / 2;
+      ctx.save();
+      ctx.translate(cx + Math.cos(mid) * 101, cy + Math.sin(mid) * 101);
+      ctx.rotate(mid + Math.PI / 2);
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = n === 0 ? 'bold 8px Arial' : 'bold 7px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(n), 0, 0);
+      ctx.restore();
+    }
+
     ctx.beginPath();
-    ctx.arc(160, 108, 74, 0, Math.PI * 2);
-    ctx.fillStyle = c;
+    ctx.arc(cx, cy, 70, 0, Math.PI * 2);
+    ctx.fillStyle = '#2a2738';
     ctx.fill();
     ctx.strokeStyle = '#facc15';
-    ctx.lineWidth = 3;
     ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 38, 0, Math.PI * 2);
+    ctx.fillStyle = '#141320';
+    ctx.fill();
+
+    const hitIndex = order.indexOf(number);
+    const angle = hitIndex * arc + arc / 2 - Math.PI / 2;
+    const bx = cx + Math.cos(angle) * 96;
+    const by = cy + Math.sin(angle) * 96;
+    ctx.beginPath();
+    ctx.arc(bx, by, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#f8fafc';
+    ctx.fill();
+
+    const c = color === 'red' ? C.red : color === 'green' ? C.green : '#e5e7eb';
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 48px Arial';
+    ctx.font = 'bold 42px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(String(number), 160, 110);
+    ctx.fillText(String(number), cx, cy + 4);
     ctx.font = 'bold 18px Arial';
-    ctx.fillText(String(color || '').toUpperCase(), 160, 202);
+    ctx.fillStyle = c;
+    ctx.fillText(String(color || '').toUpperCase(), cx, 306);
     return canvas.toBuffer('image/png');
   }
 
   static async createLimboImage(multiplier, target, won, username, gameId, bet = null, payout = null) {
     if (!canvasModule) return null;
     const { createCanvas } = canvasModule;
-    const canvas = createCanvas(400, 280);
+    const canvas = createCanvas(560, 380);
     const ctx = canvas.getContext('2d');
-    clear(ctx, 400, 280);
-    fillPanel(ctx, 0, 0, 400, 280, 18);
-    fillBoard(ctx, 20, 34, 360, 200, 16);
+    clear(ctx, 560, 380);
+    fillPanel(ctx, 0, 0, 560, 380, 18);
     const c = won ? C.green : C.red;
+
+    roundRect(ctx, 34, 34, 492, 250, 18);
+    const board = ctx.createLinearGradient(34, 34, 34, 284);
+    board.addColorStop(0, '#1d1b2d');
+    board.addColorStop(0.55, '#151525');
+    board.addColorStop(1, '#0f0e19');
+    ctx.fillStyle = board;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.55)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,255,255,.06)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 5; i++) {
+      const y = 34 + (250 * i / 5);
+      ctx.beginPath();
+      ctx.moveTo(58, y);
+      ctx.lineTo(502, y);
+      ctx.stroke();
+    }
+    for (let i = 1; i < 7; i++) {
+      const x = 34 + (492 * i / 7);
+      ctx.beginPath();
+      ctx.moveTo(x, 64);
+      ctx.lineTo(x, 260);
+      ctx.stroke();
+    }
+
+    const max = Math.max(Number(multiplier || 1), Number(target || 1), 2);
+    const graphX = 72, graphY = 250, graphW = 420, graphH = 154;
+    ctx.beginPath();
+    for (let i = 0; i <= 72; i++) {
+      const t = i / 72;
+      const v = 1 + (Number(multiplier || 1) - 1) * Math.pow(t, 1.9);
+      const px = graphX + t * graphW;
+      const py = graphY - ((v - 1) / (max - 1)) * graphH;
+      i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+    }
+    ctx.strokeStyle = c;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    const targetY = graphY - ((Number(target || 1) - 1) / (max - 1)) * graphH;
+    ctx.setLineDash([8, 7]);
+    ctx.strokeStyle = 'rgba(255,255,255,.22)';
+    ctx.beginPath();
+    ctx.moveTo(62, targetY);
+    ctx.lineTo(498, targetY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    roundRect(ctx, 132, 68, 296, 126, 18);
+    ctx.fillStyle = 'rgba(10,10,18,.78)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.055)';
+    ctx.stroke();
     ctx.fillStyle = c;
-    ctx.font = 'bold 58px Arial';
+    ctx.font = 'bold 72px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${Number(multiplier || 0).toFixed(2)}x`, 200, 98);
+    ctx.fillText(`${Number(multiplier || 0).toFixed(2)}x`, 280, 124);
     ctx.fillStyle = C.muted;
-    ctx.font = '18px Arial';
-    ctx.fillText(`Target: ${Number(target || 0).toFixed(2)}x`, 200, 150);
-    if (bet !== null) ctx.fillText(`Bet: ${formatPoints(bet)} pts`, 200, 184);
+    ctx.font = '17px Arial';
+    ctx.fillText(`Target: ${Number(target || 0).toFixed(2)}x`, 280, 174);
+    if (bet !== null) ctx.fillText(`Bet: ${formatPoints(bet)} pts`, 280, 210);
+
+    roundRect(ctx, 140, 298, 280, 46, 23);
+    ctx.fillStyle = won ? 'rgba(35,224,120,.14)' : 'rgba(239,68,68,.14)';
+    ctx.fill();
+    ctx.strokeStyle = won ? 'rgba(35,224,120,.42)' : 'rgba(239,68,68,.42)';
+    ctx.stroke();
     ctx.fillStyle = c;
     ctx.font = 'bold 22px Arial';
     const result = won ? `WON ${formatPoints(payout || 0)} pts` : `LOST ${formatPoints(bet || 0)} pts`;
-    ctx.fillText(result, 200, 220);
+    ctx.fillText(result, 280, 321);
+    ctx.fillStyle = 'rgba(255,255,255,.22)';
+    ctx.font = '12px Arial';
+    ctx.fillText(`Game ID: ${gameId}`, 280, 362);
     return canvas.toBuffer('image/png');
   }
 
@@ -523,6 +797,243 @@ class GameImages {
     ctx.font = 'bold 22px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(result === 'tie' ? 'TIE' : String(result || '').toUpperCase(), 250, 264);
+    return canvas.toBuffer('image/png');
+  }
+
+  static async createTowersImage({ mode, floor = 0, bet = 0, status = 'select', pickedTiles = [], revealMap = [], gameId = null, payout = 0 }) {
+    if (!canvasModule) return null;
+    const { createCanvas } = canvasModule;
+    const canvas = createCanvas(440, 560);
+    const ctx = canvas.getContext('2d');
+    clear(ctx, 440, 560);
+
+    const accent = status === 'lost' ? C.red : status === 'won' ? C.green : '#f59e0b';
+    const panel = ctx.createLinearGradient(0, 0, 0, 560);
+    panel.addColorStop(0, '#201333');
+    panel.addColorStop(1, '#120c20');
+    ctx.fillStyle = panel;
+    roundRect(ctx, 0, 0, 440, 560, 18);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(168,85,247,.5)';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('FLIPBET TOWER', 24, 28);
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.font = '11px Arial';
+    ctx.fillText(`mode - ${mode?.label ? String(mode.label).toLowerCase() : 'choose'}`, 24, 46);
+
+    const currentMult = mode ? Math.max(1, Number(mode.multiplier || 1)) : 1;
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#bda7d9';
+    ctx.font = 'bold 24px Arial';
+    ctx.fillText(`${currentMult.toFixed(2)}x`, 410, 28);
+    ctx.fillStyle = 'rgba(255,255,255,.45)';
+    ctx.font = '11px Arial';
+    ctx.fillText('current multiplier', 410, 46);
+
+    const tiles = mode?.tiles || 4;
+    const rows = 9;
+    const startX = 24;
+    const startY = 76;
+    const gap = 8;
+    const tileW = Math.floor((392 - (tiles - 1) * gap) / tiles);
+    const tileH = 36;
+    const picked = new Map((pickedTiles || []).map(p => [Number(p.floor), Number(p.pick)]));
+    const reveal = status === 'won' || status === 'lost';
+    const revealByFloor = new Map((revealMap || []).map(r => [Number(r.floor), r.bombs || []]));
+
+    function drawEgg(cx, cy) {
+      const g = ctx.createRadialGradient(cx - 4, cy - 6, 2, cx, cy, 14);
+      g.addColorStop(0, '#fff7cf');
+      g.addColorStop(0.45, '#facc15');
+      g.addColorStop(1, '#a16207');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 11, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffe58a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    function drawBomb(cx, cy) {
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(cx, cy + 2, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#7f1d1d';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.strokeStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(cx + 7, cy - 8);
+      ctx.quadraticCurveTo(cx + 15, cy - 18, cx + 22, cy - 8);
+      ctx.stroke();
+    }
+
+    for (let visual = 0; visual < rows; visual++) {
+      const logicalFloor = rows - visual;
+      const y = startY + visual * (tileH + gap);
+      const active = status === 'playing' && logicalFloor === floor + 1;
+      const safePick = picked.get(logicalFloor);
+      const bombs = revealByFloor.get(logicalFloor) || [];
+      for (let col = 1; col <= tiles; col++) {
+        const x = startX + (col - 1) * (tileW + gap);
+        roundRect(ctx, x, y, tileW, tileH, 7);
+        ctx.fillStyle = active ? 'rgba(250,204,21,.1)' : 'rgba(255,255,255,.035)';
+        ctx.fill();
+        ctx.strokeStyle = active ? '#f59e0b' : 'rgba(168,85,247,.22)';
+        ctx.lineWidth = active ? 2 : 1;
+        ctx.stroke();
+
+        const cx = x + tileW / 2;
+        const cy = y + tileH / 2;
+        if (reveal && bombs.includes(col)) drawBomb(cx, cy);
+        else if (reveal && !bombs.includes(col)) drawEgg(cx, cy);
+        else if (safePick === col) drawEgg(cx, cy);
+        else if (active) {
+          ctx.fillStyle = '#facc15';
+          ctx.font = 'bold 17px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('?', cx, cy + 1);
+        } else {
+          ctx.fillStyle = 'rgba(189,167,217,.55)';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      if (active && mode?.nextMultiplier) {
+        ctx.fillStyle = '#facc15';
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${mode.nextMultiplier.toFixed(2)}x`, 414, y + tileH / 2);
+      }
+    }
+
+    ctx.fillStyle = 'rgba(255,255,255,.6)';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'center';
+    const footer = status === 'lost'
+      ? 'bomb hit - tower ended'
+      : status === 'won'
+        ? `cashed out ${formatPoints(payout)} pts`
+        : floor > 0 ? `stake ${formatPoints(bet)} pts - pick the next safe tile` : `stake ${formatPoints(bet)} pts - pick a safe tile to begin`;
+    ctx.fillText(footer, 220, 506);
+    if (gameId) {
+      ctx.fillStyle = 'rgba(255,255,255,.26)';
+      ctx.font = '10px Arial';
+      ctx.fillText(`Game ID: ${gameId}`, 220, 528);
+    }
+    return canvas.toBuffer('image/png');
+  }
+
+  static async createMarketImage({ points = [], prediction = 'up', result = 'up', won = false, bet = 0, payout = 0, gameId = null }) {
+    if (!canvasModule) return null;
+    const { createCanvas } = canvasModule;
+    const canvas = createCanvas(640, 340);
+    const ctx = canvas.getContext('2d');
+    clear(ctx, 640, 340);
+
+    const bg = ctx.createLinearGradient(0, 0, 0, 340);
+    bg.addColorStop(0, '#11131a');
+    bg.addColorStop(1, '#090b10');
+    ctx.fillStyle = bg;
+    roundRect(ctx, 0, 0, 640, 340, 10);
+    ctx.fill();
+
+    ctx.fillStyle = '#f5f7fb';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('FLIPBET  |  MARKET PREDICTION', 24, 34);
+
+    ctx.fillStyle = won ? C.green : C.red;
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(won ? `PROFIT +${formatPoints(payout)} pts` : `LIQUIDATED -${formatPoints(bet)} pts`, 616, 34);
+
+    const chartX = 30;
+    const chartY = 58;
+    const chartW = 580;
+    const chartH = 220;
+    ctx.save();
+    roundRect(ctx, chartX, chartY, chartW, chartH, 8);
+    ctx.clip();
+    ctx.fillStyle = '#0b0e13';
+    ctx.fillRect(chartX, chartY, chartW, chartH);
+
+    ctx.strokeStyle = 'rgba(255,255,255,.045)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 12; i++) {
+      const x = chartX + (chartW / 12) * i;
+      ctx.beginPath();
+      ctx.moveTo(x, chartY);
+      ctx.lineTo(x, chartY + chartH);
+      ctx.stroke();
+    }
+    for (let i = 0; i <= 8; i++) {
+      const y = chartY + (chartH / 8) * i;
+      ctx.beginPath();
+      ctx.moveTo(chartX, y);
+      ctx.lineTo(chartX + chartW, y);
+      ctx.stroke();
+    }
+
+    const data = points.length > 1 ? points : [0.5, 0.56, 0.47, 0.62];
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const span = Math.max(0.01, max - min);
+    const mapped = data.map((v, i) => ({
+      x: chartX + 22 + (i / (data.length - 1)) * (chartW - 44),
+      y: chartY + 18 + (1 - ((v - min) / span)) * (chartH - 36)
+    }));
+    const split = Math.max(1, Math.floor(mapped.length * 0.55));
+
+    function strokeSegment(start, end, color) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 4;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(mapped[start].x, mapped[start].y);
+      for (let i = start + 1; i <= end; i++) ctx.lineTo(mapped[i].x, mapped[i].y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    strokeSegment(0, split, '#64748b');
+    strokeSegment(split, mapped.length - 1, result === 'up' ? C.green : C.red);
+    const last = mapped[mapped.length - 1];
+    ctx.fillStyle = result === 'up' ? C.green : C.red;
+    ctx.beginPath();
+    ctx.arc(last.x, last.y, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    const predColor = prediction === 'up' ? C.green : C.red;
+    const resColor = result === 'up' ? C.green : C.red;
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.fillText('YOUR PREDICTION', 32, 306);
+    ctx.fillText('MARKET RESULT', 298, 306);
+    ctx.fillStyle = predColor;
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText(prediction.toUpperCase(), 32, 330);
+    ctx.fillStyle = resColor;
+    ctx.fillText(result.toUpperCase(), 298, 330);
+
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'right';
+    if (gameId) ctx.fillText(`Game ID: ${gameId}`, 612, 326);
     return canvas.toBuffer('image/png');
   }
 
