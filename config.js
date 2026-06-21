@@ -5,7 +5,7 @@ module.exports = {
   mongoURI: process.env.MONGODB_URI,
   prefix: '.',
   ownerId: '1415328006704205935',
-  ownerIds: ['1415328006704205935', '1314213926258610199'].filter(Boolean),
+  ownerIds: ['1415328006704205935', '1388859512517165087'].filter(Boolean),
   withdrawRequestChannel: process.env.WITHDRAW_REQUEST_CHANNEL || '1516498395492257823',
   crashChannelId: process.env.CRASH_CHANNEL_ID || '1516491850465153137',
   publicBetsChannel: process.env.PUBLIC_BETS_CHANNEL || '1516491877904552127',
